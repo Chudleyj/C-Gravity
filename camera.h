@@ -3,14 +3,12 @@
 #include "vectors.h"
 #include "utils.h"
 
-// Default camera values
 #define YAW -90.0f
 #define PITCH -15.0f
 #define SPEED 1.5f
 #define SENSITIVITY 0.5f
-#define ZOOM 45.0f
+#define ZOOM 100.0f
 
-// Defines several possible options for camera movement. Used as abstraction to stay away from window-system specific input methods
 typedef enum{
     FORWARD,
     BACKWARD,
@@ -36,7 +34,6 @@ typedef struct {
 
 }Camera;
 
-// constructor with vectors
 Camera camera_init_vectors(vec3_t position, vec3_t up, float yaw, float pitch);
 Camera camera_init_scalar(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 mat4_t camera_get_view_matrix(Camera cam);

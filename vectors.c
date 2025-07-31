@@ -192,6 +192,9 @@ vec3_t sphericalToCartesian(float rho, float theta, float phi) {
     return cartesian;
 }
 
+
+
+
 mat4_t mat4_lookAt(vec3_t position, vec3_t target, vec3_t up){
     vec3_t z; 
     vec3_subtract(position, target, &z); 

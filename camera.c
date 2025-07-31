@@ -43,7 +43,6 @@ Camera camera_init_vectors(vec3_t position, vec3_t up, float yaw, float pitch){
     return cam; 
 }
 
-// constructor with scalar values
 Camera camera_init_scalar(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) {
     Camera cam; 
 
@@ -134,6 +133,6 @@ void camera_ProcessMouseScroll(Camera *cam, float yoffset){
     cam->zoom -= (float)yoffset;
     if (cam->zoom < 1.0f)
         cam->zoom = 1.0f;
-    if (cam->zoom > 45.0f)
-        cam->zoom = 45.0f;
+    if (cam->zoom > ZOOM)
+        cam->zoom = ZOOM;
 }

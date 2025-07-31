@@ -22,6 +22,10 @@ typedef struct {
 }vec3d_t;
 
 typedef struct {
+    float r, g, b, a;
+}colorVec_t;
+
+typedef struct {
     int size;
     int capacity;
     float *data;
