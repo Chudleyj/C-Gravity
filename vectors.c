@@ -20,6 +20,31 @@ vector_result_t GLvec3_free(GLvec3_t* vec) {
     return VECTOR_SUCESS;
 }
 
+void vector_generic_error_handle(vector_result_t err, const char* msg, vector_error_level_t errLevel){
+    switch (err) {
+        case VECTOR_ERROR_EMPTY: 
+            printf("VECTOR ERROR: VECTOR_ERROR_EMPTY\n %s", msg);
+            break;
+        case VECTOR_ERROR_MALLOC: 
+            printf("VECTOR ERROR: VECTOR_ERROR_MALLOC\n %s", msg);
+            break;
+        case VECTOR_ERROR_REALLOC: 
+            printf("VECTOR ERROR: VECTOR_ERROR_REALLOC\n %s", msg);
+            break;
+        case VECTOR_ERROR_INVALID_INDEX: 
+            printf("VECTOR ERROR: VECTOR_ERROR_INVALID_INDEX\n %s", msg);
+            break;
+        case VECTOR_ERROR_DIV_ZERO: 
+            printf("VECTOR ERROR: VECTOR_ERROR_DIV_ZERO\n %s", msg);
+            break;
+        default: break; 
+    }
+
+    if (errLevel == CRITICAL) {
+        exit(EXIT_FAILURE); 
+    }
+}
+
 static vector_result_t GLvec3_expand(GLvec3_t *vec) {
     if (!vec) return VECTOR_ERROR_EMPTY;
     float *tempData, *tempy, *tempz;
@@ -151,7 +176,7 @@ vector_result_t GLvec3_get(GLvec3_t* vec, int index, int *data) {
 vector_result_t vec3_normalize(vec3_t* vec) {
     if (!vec) return VECTOR_ERROR_EMPTY;
     float magnitude = sqrtf(powf(vec->x, 2) + powf(vec->y, 2) + powf(vec->z, 2));
-    if (magnitude == 0.0f) return VECTOR_ERROR_EMPTY;
+    if (magnitude == 0.0f) return VECTOR_ERROR_DIV_ZERO;
     vec->x /= magnitude;
     vec->y /= magnitude;
     vec->z /= magnitude;
@@ -168,7 +193,39 @@ vector_result_t vec3_add(const vec3_t srcVec1, const vec3_t srcVec2, vec3_t* tgt
     return VECTOR_SUCESS;
 }
 
+
+vector_result_t vec3d_add(const vec3d_t srcVec1, const vec3d_t srcVec2, vec3d_t* tgtVec) {
+    if (!tgtVec) return VECTOR_ERROR_EMPTY;
+
+    tgtVec->x = srcVec1.x + srcVec2.x;
+    tgtVec->y = srcVec1.y + srcVec2.y;
+    tgtVec->z = srcVec1.z + srcVec2.z;
+
+    return VECTOR_SUCESS;
+}
+
+vector_result_t vec3d_scale(vec3d_t* vec, double scale) {
+    if (!vec) return VECTOR_ERROR_EMPTY;
+
+    vec->x *= scale;
+    vec->y *= scale;
+    vec->z *= scale;
+    return VECTOR_SUCESS;
+    
+}
+
 vector_result_t vec3_subtract(const vec3_t srcVec1, const vec3_t srcVec2, vec3_t* tgtVec) {
+    if (!tgtVec) return VECTOR_ERROR_EMPTY;
+
+    tgtVec->x = srcVec1.x - srcVec2.x;
+    tgtVec->y = srcVec1.y - srcVec2.y;
+    tgtVec->z = srcVec1.z - srcVec2.z;
+
+    return VECTOR_SUCESS;
+}
+
+
+vector_result_t vec3d_subtract(const vec3d_t srcVec1, const vec3d_t srcVec2, vec3d_t* tgtVec) {
     if (!tgtVec) return VECTOR_ERROR_EMPTY;
 
     tgtVec->x = srcVec1.x - srcVec2.x;
@@ -184,7 +241,7 @@ vector_result_t vec3_cross_product(const vec3_t srcVec1, const vec3_t srcVec2, v
     tgtVec->z = srcVec1.x * srcVec2.y - srcVec1.y * srcVec2.x;
 }
 
-vec3_t sphericalToCartesian(float rho, float theta, float phi) {
+vec3_t vec3_sphericalToCartesian(float rho, float theta, float phi) {
     vec3_t cartesian;
     cartesian.x = rho * sinf(theta) * cosf(phi);
     cartesian.y = rho * sinf(theta) * sinf(phi);
@@ -274,6 +331,17 @@ void mat4_identity(mat4_t* result) {
     result->column[1].row[1] = 1.0f;
     result->column[2].row[2] = 1.0f;
     result->column[3].row[3] = 1.0f;
+}
+
+mat4_t mat4_dtranslate(const mat4_t mat, const vec3d_t vec) {
+    mat4_t result = mat;
+
+    result.column[3].row[0] = (float)mat.column[3].row[0] + vec.x;
+    result.column[3].row[1] = (float)mat.column[3].row[1] + vec.y;
+    result.column[3].row[2] = (float)mat.column[3].row[2] + vec.z;
+    result.column[3].row[3] = 1.0f;
+
+    return result;
 }
 
 

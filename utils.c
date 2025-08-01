@@ -1,6 +1,6 @@
 #include "utils.h"
 
-float degrees_to_radians(float deg) {
-	float result = (PI / 180.0f) * deg;
+double degrees_to_radians(double deg) {
+	double result = (PI / 180.0) * deg;
 	return result;
 }

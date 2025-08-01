@@ -1,4 +1,3 @@
-
 #include "shader.h"
 
 char* getShaderCode(const char* path) {
@@ -52,8 +51,7 @@ char* getShaderCode(const char* path) {
 Shader shader_create(const char* vertexPath, const char* fragmentPath) {
     const char* vertexCode = getShaderCode(vertexPath);
     const char* fragmentCode = getShaderCode(fragmentPath);
-    printf("\n%s\n", vertexCode);
-    printf("\n%s\n", fragmentCode);
+
     unsigned int vertex = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertex, 1, &vertexCode, NULL);
     glCompileShader(vertex);
