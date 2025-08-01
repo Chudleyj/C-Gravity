@@ -1,32 +1,11 @@
 #include "solarsystem.h"
 
+
+
+
+
 SolarSystem solar_obj_make_solar_system() {
     vector_result_t vecRes;
-
-    float AU_SCALE = 1.496e11f / 10.0f; // 1 AU = 10 OpenGL units
-
-
-    vec3d_t earthPos = (vec3d_t){ (double)AU_IN_METERS * (double)METER_TO_OPENGL, 0.0, 0.0 };
-
-    double moonDistance = 3.84e8; // meters
-    double moonDistOffest = 1.0; 
-    vec3d_t moonOffset = { moonDistance * (double)METER_TO_OPENGL * moonDistOffest, 0.0, 0.0 }; // radial from Earth
-    vec3d_t moonPos;
-    vecRes = vec3d_add(earthPos, moonOffset, &moonPos); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
-
-    vec3d_t earthVel = (vec3d_t){ 0.0, 29783.6 * METER_TO_OPENGL, 0.0 };
-
-    double earthMass = 5.972e24;
-    double gravConstant = 6.6743e-11; // m³/kg/s²
-
-
-    // v = sqrt(GM/r) for circular orbit
-    double moonOrbitalSpeed = sqrt((gravConstant * earthMass) / (moonDistance * moonDistOffest));
-
-    vec3d_t moonVelOffset = { 0.0, moonOrbitalSpeed * (double)METER_TO_OPENGL, 0.0 }; // perpendicular to orbit
-    vec3d_t moonVel;
-
-    vecRes = vec3d_add(earthVel, moonVelOffset, &moonVel); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
 
    vec3d_t objPositions[] = {
         (vec3d_t){0.0, 0.0, 0.0},                                      // Sun at origin
@@ -38,10 +17,7 @@ SolarSystem solar_obj_make_solar_system() {
         (vec3d_t){1.4335e12 * METER_TO_OPENGL, 0.0, 0.0},             // Saturn at 9.58 AU
         (vec3d_t){2.87e12 * METER_TO_OPENGL, 0.0, 0.0},               // Uranus at 19.2 AU
         (vec3d_t){4.495e12 * METER_TO_OPENGL, 0.0, 0.0},              // Neptune at 30.1 AU
-         moonPos                                                       // Moon
     };
-
-printf("%f, %f, %f\n %f %f %f\n", moonPos.x, moonPos.y, moonPos.z, earthPos.x, earthPos.y, earthPos.z);
 
    vec3d_t objStartVels[] = {
         (vec3d_t){0.0, 0.0, 0.0},                                    // Sun (no velocity)
@@ -52,8 +28,7 @@ printf("%f, %f, %f\n %f %f %f\n", moonPos.x, moonPos.y, moonPos.z, earthPos.x, e
         (vec3d_t){0.0, 13070.0 * METER_TO_OPENGL, 0.0},             // Jupiter
         (vec3d_t){0.0, 9690.0 * METER_TO_OPENGL, 0.0},              // Saturn
         (vec3d_t){0.0, 6800.0 * METER_TO_OPENGL, 0.0},              // Uranus
-        (vec3d_t){0.0, 5430.0 * METER_TO_OPENGL, 0.0},              // Neptune
-        moonVel                                                     // Moon
+        (vec3d_t){0.0, 5430.0 * METER_TO_OPENGL, 0.0},              // Neptune                                                    // Moon
    };
 
    // Densities in kg/m³ (order: Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune)
@@ -66,8 +41,7 @@ printf("%f, %f, %f\n %f %f %f\n", moonPos.x, moonPos.y, moonPos.z, earthPos.x, e
        1330.0f, // Jupiter
        687.0f, // Saturn
        1270.0f, // Uranus
-       1640.0f, // Neptune
-       1000.0f // Moon
+       1640.0f // Neptune
    };
 
 
@@ -80,8 +54,8 @@ printf("%f, %f, %f\n %f %f %f\n", moonPos.x, moonPos.y, moonPos.z, earthPos.x, e
       1.898e27f,  // Jupiter
       5.683e26f,  // Saturn
       8.681e25f,  // Uranus
-      1.024e26f,  // Neptune
-      7.3e22f     // Moon
+      1.024e26f // Neptune
+    
    };
 
    // Visual scaling factors (order: Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune)
@@ -90,12 +64,12 @@ printf("%f, %f, %f\n %f %f %f\n", moonPos.x, moonPos.y, moonPos.z, earthPos.x, e
         3000.0f, // Mercury (tiny, needs big scaling)
         1500.0f, // Venus
         1000.0f, // Earth  
-        2500.0f, // Mars
+        1500.0f, // Mars
         70.0f,   // Jupiter (big planet, less scaling needed)
         90.0f,   // Saturn
         200.0f,   // Uranus
-        200.0f,    // Neptune
-        270.0f // Moon // Moon is ~0.27 Earth radii
+        200.0f  // Neptune
+ 
    };
 
    float glColorsScale = 255.0f; //Hex rgb 0-255, gl 0-1, so scale
@@ -108,15 +82,27 @@ printf("%f, %f, %f\n %f %f %f\n", moonPos.x, moonPos.y, moonPos.z, earthPos.x, e
         (colorVec_t){216.0f/ glColorsScale, 202.0f/ glColorsScale, 157.0f / glColorsScale,  1.0f}, //Jupiter
         (colorVec_t){234.0f/ glColorsScale, 214.0f/ glColorsScale, 192.0f / glColorsScale,  1.0f}, //Saturn
         (colorVec_t){172.0f/ glColorsScale, 229.0f/ glColorsScale, 238.0f / glColorsScale,  1.0f}, //Uranus
-        (colorVec_t){91.0f/ glColorsScale, 93.0f/ glColorsScale, 223.0f / glColorsScale,  1.0f}, //Neptune
-        (colorVec_t){1.0f, 1.0f, 1.0f,  1.0f} //Moon
+        (colorVec_t){91.0f/ glColorsScale, 93.0f/ glColorsScale, 223.0f / glColorsScale,  1.0f} //Neptune
+        
    };
 
 
-    SolarSystem sol;
+   SolarSystem sol = { 0 };
     for (int i = 0; i < NUM_SOLAR_OBJS; i++) {
         solar_obj_init(&sol.objs[i], objPositions[i], objStartVels[i], colors[i], objMasses[i], objDensities[i], scale[i]);
+        sol.objs[i].parent_id = -1; 
+        sol.objs[i].is_moon = false; 
     }
+    sol.planet_count = NUM_SOLAR_OBJS;
+
+    for (int i = 0; i < NUM_MOONS; i++) {
+        const MoonData* moon_data = &moon_configs[i]; 
+        SolarObj* parent = &sol.objs[moon_data->parent_planet_id];
+        SolarObj* moon = &sol.objs[sol.planet_count + i]; 
+        solar_obj_init_moon(moon, parent, moon_data); 
+    }
+    sol.moon_count = NUM_MOONS;
+    sol.total_count = sol.planet_count + sol.moon_count; 
 
     return sol; 
 }
@@ -178,15 +164,15 @@ void solar_system_calc_gravity(SolarSystem* s) {
     SolarObj* compareObj = &s->objs[0];
     SolarObj* currentObj = &s->objs[0];
 
-    for (int i = 0; i < NUM_SOLAR_OBJS; i++) {
+    for (int i = 0; i < s->total_count; i++) {
         s->objs[i].priorAccleration = s->objs[i].accleration;
         s->objs[i].accleration = (vec3d_t){ 0.0, 0.0, 0.0 };
     }
 
 
-    for (int i = 0; i < NUM_SOLAR_OBJS; i++) {
+    for (int i = 0; i < s->total_count; i++) {
         currentObj = &s->objs[i];
-        for (int j = 0; j < NUM_SOLAR_OBJS; j++) {
+        for (int j = 0; j < s->total_count; j++) {
             compareObj = &s->objs[j];
             if (j != i) {
                 vec3d_t direction;
@@ -216,7 +202,7 @@ void solor_system_physics_update(SolarSystem* s, const float dTime) {
     static int count = 0;
     vector_result_t vecRes;
     double step = 0.5; 
-    for (int i = 0; i < NUM_SOLAR_OBJS; i++) {
+    for (int i = 0; i < s->total_count; i++) {
         SolarObj* obj = &s->objs[i];
 
         vecRes = vec3d_scale(&obj->accleration, step * dt); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
@@ -225,7 +211,7 @@ void solor_system_physics_update(SolarSystem* s, const float dTime) {
     }
 
     //manually do the "scale" and add from here on out bc scale will change velocity/accl permanently and we dont want that right here
-    for (int i = 0; i < NUM_SOLAR_OBJS; i++) {
+    for (int i = 0; i < s->total_count; i++) {
         SolarObj* obj = &s->objs[i];
 
         obj->position.x += obj->velocity.x * dt;
@@ -236,7 +222,7 @@ void solor_system_physics_update(SolarSystem* s, const float dTime) {
     solar_system_calc_gravity(s);
 
     //  Second half of velocity Verlet (v += 0.5 * a_new * dt)
-    for (int i = 0; i < NUM_SOLAR_OBJS; i++) {
+    for (int i = 0; i < s->total_count; i++) {
         SolarObj* obj = &s->objs[i];
 
         obj->velocity.x += 0.5 * obj->accleration.x * dt;

@@ -1,5 +1,5 @@
 #include "camera.h"
-
+#include <stdio.h>
 static void update_camera_vectors(Camera* cam) {
 
     float yaw_rad = degrees_to_radians(cam->yaw);
@@ -74,33 +74,34 @@ void camera_ProcessKeyboard(Camera *cam, Camera_Movement direction, const float 
 
 
     if (direction == FORWARD) {
+        printf("%f", deltaTime);
         cam->position.x += cam->front.x * velocity;  
-        //cam->position.y += cam->front.y * velocity;
+        cam->position.y += cam->front.y * velocity;
         cam->position.z += cam->front.z * velocity;
     }
     if (direction == BACKWARD) {
         cam->position.x -= cam->front.x * velocity;
-       // cam->position.y -= cam->front.y * velocity;
+        cam->position.y -= cam->front.y * velocity;
         cam->position.z -= cam->front.z * velocity;
     }
     if (direction == LEFT) {
         cam->position.x -= cam->right.x * velocity;
-      //  cam->position.y -= cam->right.y * velocity;
+        cam->position.y -= cam->right.y * velocity;
         cam->position.z -= cam->right.z * velocity;
     }
     if (direction == RIGHT) {
         cam->position.x += cam->right.x * velocity;
-       // cam->position.y += cam->right.y * velocity;
+        cam->position.y += cam->right.y * velocity;
         cam->position.z += cam->right.z * velocity;
     }
     if (direction == UP) {
         cam->position.x += cam->up.x * velocity;
-      //  cam->position.y += cam->up.y * velocity;
+        cam->position.y += cam->up.y * velocity;
         cam->position.z += cam->up.z * velocity;
     }
     if (direction == DOWN) {
         cam->position.x -= cam->up.x * velocity;
-      //  cam->position.y -= cam->up.y * velocity;
+        cam->position.y -= cam->up.y * velocity;
         cam->position.z -= cam->up.z * velocity;
     }
 }

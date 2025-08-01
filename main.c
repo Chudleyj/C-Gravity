@@ -16,7 +16,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
 void updateCamera(Shader shader);
-void drawToScreen(SolarSystem *s, vec3_t* accl, vec3_t* oldAccl, Shader shader, float ts);
+void drawToScreen(SolarSystem *s, Shader shader, float ts);
 
 int main() {
     Camera camera = camera_init_vectors((vec3_t) { 0.0f, 50.0f, 500.0f },(vec3_t){ 0.0f, 1.0f, 1.0f }, YAW, PITCH);
@@ -49,17 +49,18 @@ int main() {
     Shader shader = shader_create("vertex.glsl", "fragment.glsl");
     vec3_t lightPos = (vec3_t){ 1.2f, 1.0f, 2.0f };
     mat4_t projection;
-    vec3_t accelaerations[NUM_SOLAR_OBJS];
-    vec3_t oldAccelerations[NUM_SOLAR_OBJS];
+
   
     while (!glfwWindowShouldClose(window)) {
+            float currentFrame = (float)glfwGetTime();
+            deltaTime = currentFrame - lastFrame;
+            lastFrame = currentFrame;
+            deltaTime *= 50;
             processInput(window, global_camera);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            float currentFrame = (float)glfwGetTime();
-            deltaTime = currentFrame - lastFrame;
-            lastFrame = currentFrame;
+ 
 
             shader_use(shader);
 
@@ -79,7 +80,7 @@ int main() {
             float physicsTimeStep = PHYSICS_TIMESTEP; 
           //physicsTimeStep = deltaTime * 86400.0f
   
-            drawToScreen(&sol, accelaerations, oldAccelerations, shader, physicsTimeStep);
+            drawToScreen(&sol, shader, physicsTimeStep);
         
         glfwSwapBuffers(window);
         glfwPollEvents();
@@ -89,19 +90,19 @@ int main() {
     return 0;
 }
 
-void drawToScreen(SolarSystem *s, vec3_t *accl, vec3_t *oldAccl, Shader shader, float ts) {
+void drawToScreen(SolarSystem *s, Shader shader, float ts) {
     GLuint colorVecLocation = glGetUniformLocation(shader.ID, "objColor");
     GLuint emitLightLocation = glGetUniformLocation(shader.ID, "emitLight");
     mat4_t model;
     SolarObj* compareObj = &s->objs[0];
     SolarObj* currentObj = &s->objs[0];
     solor_system_physics_update(s, ts);
-    for (int i = 0; i < NUM_SOLAR_OBJS; i++) {
+    for (int i = 0; i < s->total_count; i++) {
         currentObj = &s->objs[i];
 
         
 
-        for (int j = 0; j < NUM_SOLAR_OBJS; j++) {
+        for (int j = 0; j < s->total_count; j++) {
             compareObj = &s->objs[j];
             if (currentObj != compareObj) {
                 if (compareObj != currentObj) {
@@ -124,23 +125,36 @@ void drawToScreen(SolarSystem *s, vec3_t *accl, vec3_t *oldAccl, Shader shader, 
         glBindVertexArray(currentObj->VAO);
         mat4_identity(&model);
         vec3d_t scaledPos = solar_obj_log_scale_positions(currentObj->position);
-        if (i == MOON) {
-           
-            vec3d_t moonRelToEarth; 
-            vec3d_subtract(currentObj->position, s->objs[EARTH].position, &moonRelToEarth);
+        if (currentObj->is_moon) {
+            // Special Moon positioning relative to its parent planet
+            SolarObj* parent = &s->objs[currentObj->parent_id];
+            
+            vec3d_t moonRelToParent; 
+            vec3d_subtract(currentObj->position, parent->position, &moonRelToParent);
+            
             float moonVisScale = 40.0f;
-            moonRelToEarth = (vec3d_t){ moonRelToEarth.x * moonVisScale,  moonRelToEarth.y * moonVisScale,  moonRelToEarth.z * moonVisScale };
+            //Mar's moons are so tiny we gotta shoot them out even more visually. 
+            if (currentObj->parent_id == MARS) {
+                moonVisScale *= 20.0f;
+            }
+            moonRelToParent = (vec3d_t){ 
+                moonRelToParent.x * moonVisScale,  
+                moonRelToParent.y * moonVisScale,  
+                moonRelToParent.z * moonVisScale 
+            };
+            
+            vec3d_t parentScaledPos = solar_obj_log_scale_positions(parent->position);
             vec3d_t moonRenderPos;
-            vec3d_add(s->objs[EARTH].position, moonRelToEarth, &moonRenderPos); 
+            vec3d_add(parentScaledPos, moonRelToParent, &moonRenderPos); 
+            
             model = mat4_dtranslate(model, moonRenderPos);
-            shader_setmat4(shader, "model", &model);
         }
         else {
             model = mat4_translate(model, (vec3_t){ (float)scaledPos.x, (float)scaledPos.y, (float)scaledPos.z });
-            shader_setmat4(shader, "model", &model);
+            
         }
 
-
+        shader_setmat4(shader, "model", &model);
         glDrawArrays(GL_TRIANGLES, 0, currentObj->vertex_count / 3);
 
     }
@@ -154,11 +168,13 @@ void updateCamera(Shader shader) {
 
 void processInput(GLFWwindow* window, Camera* cam)
 {
+    
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
         camera_ProcessKeyboard(cam, FORWARD, deltaTime);
+
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
         camera_ProcessKeyboard(cam, BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)

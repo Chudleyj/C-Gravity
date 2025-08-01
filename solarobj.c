@@ -66,6 +66,29 @@ GLvec3_t solar_obj_draw_sphere(float radius) {
     return verts;
 }
 
+void solar_obj_init_moon(SolarObj* moon, const SolarObj* parent, const MoonData* moon_data) {
+    // Calculate moon's initial position (offset from parent)
+    vec3d_t moon_offset = { moon_data->distance_from_parent * METER_TO_OPENGL, 0.0, 0.0 };
+    vec3d_t moon_pos;
+    vec3d_add(parent->position, moon_offset, &moon_pos);
+
+    // Calculate orbital velocity for circular orbit
+    double orbital_speed = sqrt((G * (double)parent->mass) / moon_data->distance_from_parent);
+    orbital_speed *= moon_data->orbital_speed_factor; 
+
+    vec3d_t moon_vel_offset = { 0.0, orbital_speed * METER_TO_OPENGL, 0.0 };
+    vec3d_t moon_vel;
+    vec3d_add(parent->velocity, moon_vel_offset, &moon_vel);
+
+   
+    solar_obj_init(moon, moon_pos, moon_vel, moon_data->color,
+        moon_data->mass, moon_data->density, moon_data->scale);
+
+    moon->parent_id = moon_data->parent_planet_id;
+    moon->is_moon = true;
+}
+
+
 void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_t color, float mass, float density, float scale) {
     obj->position = startPos;
     obj->velocity = startVel;
@@ -75,6 +98,7 @@ void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_
     obj->color = color;
     obj->accleration = (vec3d_t){ 0.0f };
     obj->priorAccleration = (vec3d_t){ 0.0f };
+
     float volume = mass / density; // m^3
     float radius_meters = powf((3.0f * volume) / (4.0f * PI), 1.0f / 3.0f);
 
