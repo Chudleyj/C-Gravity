@@ -44,13 +44,15 @@ int main() {
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     
     SolarSystem sol = solar_obj_make_solar_system(); 
-    solor_system_physics_update(&sol, PHYSICS_TIMESTEP);
-
+   // solor_system_physics_update(&sol, PHYSICS_TIMESTEP);
+  
     Shader shader = shader_create("vertex.glsl", "fragment.glsl");
     vec3_t lightPos = (vec3_t){ 1.2f, 1.0f, 2.0f };
     mat4_t projection;
 
-  
+    double simTime = 0.0; 
+    double physStep = 86400.0; //one day in sec
+
     while (!glfwWindowShouldClose(window)) {
             float currentFrame = (float)glfwGetTime();
             deltaTime = currentFrame - lastFrame;
@@ -59,8 +61,12 @@ int main() {
             processInput(window, global_camera);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
- 
+            
+            sol = rk45(sol, simTime, simTime + physStep , 0.01, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 });
+         
+            for (int i = 0; i < sol.total_count; i++) {
+                printf("Planet %d pos: %.2e %.2e %.2e\n", i, sol.objs[i].position.x, sol.objs[i].position.y, sol.objs[i].position.z);
+            }
 
             shader_use(shader);
 
@@ -82,10 +88,11 @@ int main() {
   
             drawToScreen(&sol, shader, physicsTimeStep);
         
-        glfwSwapBuffers(window);
-        glfwPollEvents();
+            glfwSwapBuffers(window);
+            glfwPollEvents();
+            simTime += physStep; 
     }
-
+    free(sol.objs); 
     glfwDestroyWindow(window);
     return 0;
 }
@@ -96,8 +103,8 @@ void drawToScreen(SolarSystem *s, Shader shader, float ts) {
     mat4_t model;
     SolarObj* compareObj = &s->objs[0];
     SolarObj* currentObj = &s->objs[0];
-    solor_system_physics_update(s, ts);
-    for (int i = 0; i < s->total_count; i++) {
+    //solor_system_physics_update(s, ts);
+     for (int i = 0; i < s->total_count; i++) {
         currentObj = &s->objs[i];
 
         

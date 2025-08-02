@@ -5,9 +5,6 @@
 #include <GLFW/glfw3.h>
 #include <stdbool.h>
 
-
-
-
 typedef enum {
     SUN = 0, 
     MERCURY = 1, 
@@ -35,18 +32,18 @@ typedef struct {
 
 static const MoonData moon_configs[] = {
  
-    {EARTH, 3.84e8, 1.0, 7.3e22f, 3340.0f, 270.0f,
+    {EARTH, 3.84e8, 1.0, 7.3e22f, 3340.0f, 470.0f,
      {1.0f, 1.0f, 1.0f, 1.0f}, "Luna"},
 
-     {MARS, 9.376e6, 1.0, 1.0659e16f, 1876.0f, 100000.0f,
+     {MARS, 9.376e6, 1.0, 1.0659e16f, 1876.0f, 200000.0f,
       {0.4f, 0.4f, 0.4f, 1.0f}, "Phobos"},
-     {MARS, 2.3463e7, 1.0, 1.4762e15f, 1471.0f, 100000.0f,
+     {MARS, 2.3463e7, 1.0, 1.4762e15f, 1471.0f, 200000.0f,
       {0.3f, 0.3f, 0.3f, 1.0f}, "Deimos"},
 
       // Jupiter's major moons only atm
-      {JUPITER, 4.217e8, 1.0, 8.9319e22f, 3528.0f, 400.0f,
+      {JUPITER, 4.217e8, 1.0, 8.9319e22f, 3528.0f, 500.0f,
        {1.0f, 1.0f, 0.8f, 1.0f}, "Io"},
-      {JUPITER, 6.709e8, 1.0, 4.7998e22f, 3013.0f, 450.0f,
+      {JUPITER, 6.709e8, 1.0, 4.7998e22f, 3013.0f, 550.0f,
        {0.9f, 0.9f, 0.7f, 1.0f}, "Europa"},
 };
 #define NUM_MOONS (sizeof(moon_configs) / sizeof(MoonData))
@@ -75,3 +72,83 @@ void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_
 float solar_obj_check_collision(const SolarObj *obj1, const SolarObj *obj2);
 vec3d_t solar_obj_log_scale_positions(const vec3d_t realPosition);
 static void solar_obj_init_VAO_VBO(GLuint* VAO, GLuint* VBO, const float* vertices, size_t vertexCount);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
