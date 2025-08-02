@@ -1,7 +1,13 @@
 # C-Gravity
 Gravity visualization simulation in C using OpenGL
 
-Work in progress, gods speed if you try to build/run this on your PC in its current state.
+This simulation implements the "Runge-Kutta-Fhelberg method" for approximating solutions to Ordinary Differential Equations (Newton's Law of Graviational Accelarion being an ODE)
+Implenetation is dervivied from "LOW-ORDER CLASSICAL RUNGE-KUTTA FORMULAS WITH STEPSIZE CONTROL AND THEIR APPLICATION TO SOME HEAT TRANSFER PROBLEMS" by Erwin Fhelberg 1969 and can be found at:
+https://ntrs.nasa.gov/api/citations/19690021375/downloads/19690021375.pdf
+
+Coefficients used in the algoritm can also be found in the above, though one may find it easier to locate these references at https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta%E2%80%93Fehlberg_method
+
+Work in progress, gods speed if you try to build/run this on your PC in its current state. 
 
 Examples: 
 
