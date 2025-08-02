@@ -240,6 +240,35 @@ void solor_system_physics_update(SolarSystem* s, const float dTime) {
 }
 
 
+
+
+SolarSystem solar_system_copy(SolarSystem src) {
+    SolarSystem dest;
+    dest.total_count = src.total_count;
+
+    dest.objs = malloc(sizeof(SolarObj) * src.total_count);
+    if(dest.objs)
+
+
+    for (int i = 0; i < src.total_count; i++) {
+        dest.objs[i] = src.objs[i];
+    }
+    return dest;
+}
+
+void rk45_updateSystem(SolarSystem* s, const SolarSystem temp, double h) {
+    for (int i = 0; i < temp.total_count; i++) {
+        s->objs[i].position.x = temp.objs[i].velocity.x * h;
+        s->objs[i].velocity.x = temp.objs[i].accleration.x * h;
+
+        s->objs[i].position.y = temp.objs[i].velocity.y * h;
+        s->objs[i].velocity.y = temp.objs[i].accleration.y * h;
+
+        s->objs[i].position.z = temp.objs[i].velocity.z * h;
+        s->objs[i].velocity.z = temp.objs[i].accleration.z * h;
+    }
+}
+
 /*
 //Force = mass * accl
 //Force due to gravity = F(g)
@@ -293,7 +322,7 @@ while t < tf:
     k2 = h * f(t + a2*h, y + b21*k1)
 
     // Step 3: Repeat with updated trial states
-    find B values at https://ntrs.nasa.gov/api/citations/19690021375/downloads/19690021375.pdf 
+    find B values at https://ntrs.nasa.gov/api/citations/19690021375/downloads/19690021375.pdf
     k3 = h * f(t + a3*h, y + b31*k1 + b32*k2)
     k4 = h * f(t + a4*h, y + b41*k1 + b42*k2 + b43*k3)
     k5 = h * f(t + a5*h, y + b51*k1 + b52*k2 + b53*k3 + b54*k4)
@@ -357,12 +386,12 @@ k2.pos = h * temp.vel
 k2.vel = h*temp.accl
 
 
-//k3 
+//k3
 temp.pos = y.pos + (k2.pos * b32) + (k1.pos *b31)
 temp.vel = y.vel + (k2.vel * b32) + (k1.vel * b31)
 
 
-calcGravity(&temp); 
+calcGravity(&temp);
 k3.pos = h * temp.vel
 k3.vel = h*temp.accl
 
@@ -387,32 +416,6 @@ k2.vel = h*temp.accl
 
 */
 
-SolarSystem solar_system_copy(SolarSystem src) {
-    SolarSystem dest;
-    dest.total_count = src.total_count;
-
-    dest.objs = malloc(sizeof(SolarObj) * src.total_count);
-    if(dest.objs)
-
-
-    for (int i = 0; i < src.total_count; i++) {
-        dest.objs[i] = src.objs[i];
-    }
-    return dest;
-}
-
-void rk45_updateSystem(SolarSystem* s, const SolarSystem temp, double h) {
-    for (int i = 0; i < temp.total_count; i++) {
-        s->objs[i].position.x = temp.objs[i].velocity.x * h;
-        s->objs[i].velocity.x = temp.objs[i].accleration.x * h;
-
-        s->objs[i].position.y = temp.objs[i].velocity.y * h;
-        s->objs[i].velocity.y = temp.objs[i].accleration.y * h;
-
-        s->objs[i].position.z = temp.objs[i].velocity.z * h;
-        s->objs[i].velocity.z = temp.objs[i].accleration.z * h;
-    }
-}
 
 SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_initial, vec3d_t tol_abs_pos, vec3d_t tol_abs_vel, vec3d_t tol_rel_pos, vec3d_t tol_rel_vel) {
   //  printf("ENTERED\n");
@@ -596,5 +599,26 @@ SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_init
         h = h * 0.84 * pow(scale_factor, 0.25);
 
      }
+     k1 = solar_system_copy(s);
+     k2 = solar_system_copy(s);
+     k3 = solar_system_copy(s);
+     k4 = solar_system_copy(s);
+     k5 = solar_system_copy(s);
+     k6 = solar_system_copy(s);
+     temp = solar_system_copy(s);
+     y4th_orderSolution = solar_system_copy(s);
+     y5th_orderSolution = solar_system_copy(s);
+
+     free(k1.objs);
+     free(k2.objs);
+     free(k3.objs);
+     free(k4.objs);
+     free(k5.objs);
+     free(k6.objs);
+     free(temp.objs);
+     free(y4th_orderSolution.objs);
+     free(y5th_orderSolution.objs);
+
+
      return y; 
 }
