@@ -599,15 +599,7 @@ SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_init
         h = h * 0.84 * pow(scale_factor, 0.25);
 
      }
-     k1 = solar_system_copy(s);
-     k2 = solar_system_copy(s);
-     k3 = solar_system_copy(s);
-     k4 = solar_system_copy(s);
-     k5 = solar_system_copy(s);
-     k6 = solar_system_copy(s);
-     temp = solar_system_copy(s);
-     y4th_orderSolution = solar_system_copy(s);
-     y5th_orderSolution = solar_system_copy(s);
+
 
      free(k1.objs);
      free(k2.objs);
@@ -617,6 +609,7 @@ SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_init
      free(k6.objs);
      free(temp.objs);
      free(y4th_orderSolution.objs);
+     y5th_orderSolution = solar_system_copy(s); //TODO: this is a bug, it get seg fault if i dont copy back to here before i free???
      free(y5th_orderSolution.objs);
 
 
