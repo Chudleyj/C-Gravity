@@ -2,72 +2,62 @@
 #include "camera.h"
 #include "solarsystem.h"
 
-
-float deltaTime = 0.0f;
-
-
-Camera *global_camera = NULL; 
-
-bool firstMouse = true;
-
-void processInput(GLFWwindow* window, Camera* cam);
+void processInput(GLFWwindow* window, Camera* cam, float dt);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
 void updateCamera(Shader shader);
-void drawToScreen(SolarSystem *s, Shader shader, float ts);
+void drawToScreen(SolarSystem *s, Shader shader);
+
+Camera* global_camera = NULL;
+bool firstMouse = true;
 
 int main() {
+
     Camera camera = camera_init_vectors((vec3_t) { 0.0f, 50.0f, 500.0f },(vec3_t){ 0.0f, 1.0f, 1.0f }, YAW, PITCH);
     global_camera = &camera; 
 
-    float lastFrame = 0.0f;
 
     if (!glfwInit()) return -1;
     atexit(glfwTerminate);
 
-    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "3D Sphere", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(2560, 1440, "C-Gravity", glfwGetPrimaryMonitor(), NULL);
     if (!window) { glfwTerminate(); return -1; }
     glfwMakeContextCurrent(window);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSetCursorPosCallback(window, mouse_callback);
     glfwSetScrollCallback(window, scroll_callback);
-  
+   
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("Failed to init GLAD\n");
         return -1;
     }
     glEnable(GL_DEPTH_TEST);
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     
     SolarSystem sol = solar_obj_make_solar_system(); 
-   // solor_system_physics_update(&sol, PHYSICS_TIMESTEP);
   
     Shader shader = shader_create("vertex.glsl", "fragment.glsl");
     vec3_t lightPos = (vec3_t){ 1.2f, 1.0f, 2.0f };
     mat4_t projection;
 
+    float deltaTime = 0.0f;
+    float lastFrame = 0.0f;
     double simTime = 0.0; 
-    double physStep = 86400.0; //one day in sec
+    double physStep = 86400.0 /3; //one day in sec = 86400
 
     while (!glfwWindowShouldClose(window)) {
             float currentFrame = (float)glfwGetTime();
             deltaTime = currentFrame - lastFrame;
             lastFrame = currentFrame;
             deltaTime *= 50;
-            processInput(window, global_camera);
+            processInput(window, global_camera, deltaTime);
 
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             
-            sol = rk45(sol, simTime, simTime + physStep , 0.01, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 });
-         
-            for (int i = 0; i < sol.total_count; i++) {
-                printf("Planet %d pos: %.2e %.2e %.2e\n", i, sol.objs[i].position.x, sol.objs[i].position.y, sol.objs[i].position.z);
-            }
-
             shader_use(shader);
 
             updateCamera(shader); 
@@ -75,18 +65,17 @@ int main() {
             mat4_perspective(&projection, degrees_to_radians(global_camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
             shader_setmat4(shader, "projection", &projection);
             shader_setVec3(shader, "viewPos", global_camera->position.x, global_camera->position.y, global_camera->position.z);
-
-            // Set light and view positions for lighting
             shader_setVec3(shader, "lightPos", lightPos.x, lightPos.y, lightPos.z);
             //make the light move:
             lightPos.x = 50.0f * cos(currentFrame);
             lightPos.z = 50.0f * sin(currentFrame);
             lightPos.y = 20.0f;
 
-            float physicsTimeStep = PHYSICS_TIMESTEP; 
-          //physicsTimeStep = deltaTime * 86400.0f
-  
-            drawToScreen(&sol, shader, physicsTimeStep);
+          
+            //Use RK45 Method to caluclate gravity over time
+            sol = rk45(sol, simTime, simTime + physStep, 0.01, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 });
+            
+            drawToScreen(&sol, shader);
         
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -97,18 +86,19 @@ int main() {
     return 0;
 }
 
-void drawToScreen(SolarSystem *s, Shader shader, float ts) {
+void drawToScreen(SolarSystem* s, Shader shader) {
     GLuint colorVecLocation = glGetUniformLocation(shader.ID, "objColor");
     GLuint emitLightLocation = glGetUniformLocation(shader.ID, "emitLight");
     mat4_t model;
     SolarObj* compareObj = &s->objs[0];
     SolarObj* currentObj = &s->objs[0];
-    //solor_system_physics_update(s, ts);
+
+    //Loop over the solar system, draw every object in the system at its updated positions
      for (int i = 0; i < s->total_count; i++) {
         currentObj = &s->objs[i];
 
-        
-
+        //Loop over the solar system again, compare each object against the current obj of the outer loop, check for collison 
+        // (in our current sim, this really shouldnt come up, but there is a CHANCE with moons on some faster speeds I use during testing so we leave it for now)
         for (int j = 0; j < s->total_count; j++) {
             compareObj = &s->objs[j];
             if (currentObj != compareObj) {
@@ -120,6 +110,7 @@ void drawToScreen(SolarSystem *s, Shader shader, float ts) {
                 }
             }
         }
+
         //its the sun, emit light instead of reflect it
         if (i == 0) {
             glUniform1i(emitLightLocation, 1);
@@ -130,8 +121,8 @@ void drawToScreen(SolarSystem *s, Shader shader, float ts) {
 
         glUniform4f(colorVecLocation, currentObj->color.r, currentObj->color.g, currentObj->color.b, currentObj->color.a);
         glBindVertexArray(currentObj->VAO);
+        
         mat4_identity(&model);
-        vec3d_t scaledPos = solar_obj_log_scale_positions(currentObj->position);
         if (currentObj->is_moon) {
             // Special Moon positioning relative to its parent planet
             SolarObj* parent = &s->objs[currentObj->parent_id];
@@ -157,6 +148,7 @@ void drawToScreen(SolarSystem *s, Shader shader, float ts) {
             model = mat4_dtranslate(model, moonRenderPos);
         }
         else {
+            vec3d_t scaledPos = solar_obj_log_scale_positions(currentObj->position);
             model = mat4_translate(model, (vec3_t){ (float)scaledPos.x, (float)scaledPos.y, (float)scaledPos.z });
             
         }
@@ -173,25 +165,24 @@ void updateCamera(Shader shader) {
     shader_setmat4(shader, "view", &view);
 }
 
-void processInput(GLFWwindow* window, Camera* cam)
+void processInput(GLFWwindow* window, Camera* cam, float dt)
 {
-    
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera_ProcessKeyboard(cam, FORWARD, deltaTime);
+        camera_ProcessKeyboard(cam, FORWARD, dt);
 
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera_ProcessKeyboard(cam, BACKWARD, deltaTime);
+        camera_ProcessKeyboard(cam, BACKWARD, dt);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera_ProcessKeyboard(cam, LEFT, deltaTime);
+        camera_ProcessKeyboard(cam, LEFT, dt);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera_ProcessKeyboard(cam, RIGHT, deltaTime);
+        camera_ProcessKeyboard(cam, RIGHT, dt);
     if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        camera_ProcessKeyboard(cam, UP, deltaTime);
+        camera_ProcessKeyboard(cam, UP, dt);
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
-        camera_ProcessKeyboard(cam, DOWN, deltaTime);
+        camera_ProcessKeyboard(cam, DOWN, dt);
 }
 
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn)

@@ -46,8 +46,8 @@ static const MoonData moon_configs[] = {
       {JUPITER, 6.709e8, 1.0, 4.7998e22f, 3013.0f, 550.0f,
        {0.9f, 0.9f, 0.7f, 1.0f}, "Europa"},
 };
-#define NUM_MOONS (sizeof(moon_configs) / sizeof(MoonData))
-#define TOTAL_OBJECTS (NUM_SOLAR_OBJS + NUM_MOONS)
+#define NUM_MOONS (sizeof(moon_configs) / sizeof(MoonData)) //TODO: Gross placement & I don't think this should be a hard define...
+#define TOTAL_OBJECTS (NUM_SOLAR_OBJS + NUM_MOONS) //TODO:  Really shouldnt be a hard define, this should be variable...
 
 typedef struct {
     GLuint VAO, VBO;
@@ -62,7 +62,7 @@ typedef struct {
     colorVec_t color; 
     size_t vertex_count;
     size_t moon_count; 
-    int parent_id; //-1 if not a moon
+    int parent_id; //-1 if not a moon, else a SolarObjNames enum value 
     bool is_moon;
 }SolarObj;
 

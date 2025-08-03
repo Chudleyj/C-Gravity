@@ -99,7 +99,7 @@ void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_
     obj->accleration = (vec3d_t){ 0.0f };
     obj->priorAccleration = (vec3d_t){ 0.0f };
 
-    float volume = mass / density; // m^3
+    float volume = mass / density; 
     float radius_meters = powf((3.0f * volume) / (4.0f * PI), 1.0f / 3.0f);
 
     obj->radius = radius_meters * METER_TO_OPENGL * obj->scale; // convert radius to OpenGL units directly
@@ -172,7 +172,7 @@ static void solar_obj_init_VAO_VBO(GLuint* VAO, GLuint* VBO, const float* vertic
 
     glBindVertexArray(*VAO);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(float), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(float), vertices, GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);

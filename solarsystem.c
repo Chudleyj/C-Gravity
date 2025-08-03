@@ -1,8 +1,4 @@
-#include "solarsystem.h"
-
-
-
-
+﻿#include "solarsystem.h"
 
 SolarSystem solar_obj_make_solar_system() {
     vector_result_t vecRes;
@@ -28,10 +24,10 @@ SolarSystem solar_obj_make_solar_system() {
         (vec3d_t){0.0, 13070.0 * METER_TO_OPENGL, 0.0},             // Jupiter
         (vec3d_t){0.0, 9690.0 * METER_TO_OPENGL, 0.0},              // Saturn
         (vec3d_t){0.0, 6800.0 * METER_TO_OPENGL, 0.0},              // Uranus
-        (vec3d_t){0.0, 5430.0 * METER_TO_OPENGL, 0.0},              // Neptune                                                    // Moon
+        (vec3d_t){0.0, 5430.0 * METER_TO_OPENGL, 0.0},              // Neptune                                                    
    };
 
-   // Densities in kg/m� (order: Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune)
+   // Densities in kg/m^3
    float objDensities[] = {
        1410.0f, // Sun
        5430.0f, // Mercury  
@@ -58,14 +54,13 @@ SolarSystem solar_obj_make_solar_system() {
     
    };
 
-   // Visual scaling factors (order: Sun, Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune)
    float scale[] = {
-        20.0f,   // Sun (make it visible but not huge)
-        3000.0f, // Mercury (tiny, needs big scaling)
+        20.0f,   // Sun
+        3000.0f, // Mercury 
         1500.0f, // Venus
         1000.0f, // Earth  
         1500.0f, // Mars
-        70.0f,   // Jupiter (big planet, less scaling needed)
+        70.0f,   // Jupiter 
         90.0f,   // Saturn
         200.0f,   // Uranus
         200.0f  // Neptune
@@ -203,45 +198,6 @@ void solar_system_calc_gravity(SolarSystem* s) {
 
 }
 
-void solor_system_physics_update(SolarSystem* s, const float dTime) {
-    double dt = (double)dTime;
-    static int count = 0;
-    vector_result_t vecRes;
-    double step = 0.5; 
-    for (int i = 0; i < s->total_count; i++) {
-        SolarObj* obj = &s->objs[i];
-
-        vecRes = vec3d_scale(&obj->accleration, step * dt); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
-        vecRes = vec3d_add(obj->velocity, obj->accleration, &obj->velocity); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
-
-    }
-
-    //manually do the "scale" and add from here on out bc scale will change velocity/accl permanently and we dont want that right here
-    for (int i = 0; i < s->total_count; i++) {
-        SolarObj* obj = &s->objs[i];
-
-        obj->position.x += obj->velocity.x * dt;
-        obj->position.y += obj->velocity.y * dt;
-        obj->position.z += obj->velocity.z * dt;
-    }
-
-    solar_system_calc_gravity(s);
-
-    //  Second half of velocity Verlet (v += 0.5 * a_new * dt)
-    for (int i = 0; i < s->total_count; i++) {
-        SolarObj* obj = &s->objs[i];
-
-        obj->velocity.x += 0.5 * obj->accleration.x * dt;
-        obj->velocity.y += 0.5 * obj->accleration.y * dt;
-        obj->velocity.z += 0.5 * obj->accleration.z * dt;
-    }
-
-
-}
-
-
-
-
 SolarSystem solar_system_copy(SolarSystem src) {
     SolarSystem dest;
     dest.total_count = src.total_count;
@@ -254,19 +210,6 @@ SolarSystem solar_system_copy(SolarSystem src) {
         dest.objs[i] = src.objs[i];
     }
     return dest;
-}
-
-void rk45_updateSystem(SolarSystem* s, const SolarSystem temp, double h) {
-    for (int i = 0; i < temp.total_count; i++) {
-        s->objs[i].position.x = temp.objs[i].velocity.x * h;
-        s->objs[i].velocity.x = temp.objs[i].accleration.x * h;
-
-        s->objs[i].position.y = temp.objs[i].velocity.y * h;
-        s->objs[i].velocity.y = temp.objs[i].accleration.y * h;
-
-        s->objs[i].position.z = temp.objs[i].velocity.z * h;
-        s->objs[i].velocity.z = temp.objs[i].accleration.z * h;
-    }
 }
 
 /*
@@ -336,11 +279,11 @@ while t < tf:
         0
         1/4	1/4
         3/8	3/32	9/32
-        12/13	1932/2197	?7200/2197	7296/2197
-        1	439/216	?8	3680/513	?845/4104
-        1/2	?8/27	2	?3544/2565	1859/4104	?11/40
-        16/135	0	6656/12825	28561/56430	?9/50	2/55 <--- 5th Order Solution (note we skip k2)
-        25/216	0	1408/2565	2197/4104	?1/5	0 <---- 4th Order Solution (note we skip k2 and k6)
+        12/13	1932/2197	−7200/2197	7296/2197
+        1	439/216	−8	3680/513	−845/4104
+        1/2	−8/27	2	−3544/2565	1859/4104	−11/40
+        16/135	0	6656/12825	28561/56430	−9/50	2/55 <--- 5th Order Solution (note we skip k2)
+        25/216	0	1408/2565	2197/4104	−1/5	0 <---- 4th Order Solution (note we skip k2 and k6)
 
 
         y_4th = y + (25/216) * k1
@@ -416,12 +359,9 @@ k2.vel = h*temp.accl
 
 */
 
-
-SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_initial, vec3d_t tol_abs_pos, vec3d_t tol_abs_vel, vec3d_t tol_rel_pos, vec3d_t tol_rel_vel) {
-  //  printf("ENTERED\n");
+SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_initial, vec3d_t tolAbsPos, vec3d_t tolAbsVel, vec3d_t tolRelPos, vec3d_t tolRelVel) {
     SolarSystem y, k1, k2, k3, k4, k5, k6, temp, y4th_orderSolution, y5th_orderSolution;
     vector_result_t vecRes; 
-
 
     y = solar_system_copy(s);
     k1 = solar_system_copy(s);
@@ -437,169 +377,60 @@ SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_init
     double h = h_initial; 
     double t = initTime; 
    
-    vec3d_t err_pos[TOTAL_OBJECTS];
-    vec3d_t err_vel[TOTAL_OBJECTS];
-    vec3d_t tolerance_pos[TOTAL_OBJECTS];
-    vec3d_t tolerance_vel[TOTAL_OBJECTS];
+    vec3d_t errPos[TOTAL_OBJECTS];
+    vec3d_t errVel[TOTAL_OBJECTS];
+    vec3d_t tolerancePos[TOTAL_OBJECTS];
+    vec3d_t toleranceVel[TOTAL_OBJECTS];
     while (t < finalTime) {
-        //printf("LOOP 1\n");
         if (t + h > finalTime) {
             h = finalTime - t;
         }
         bool step_accepted = false;
-        while (!step_accepted) {
-            //printf("LOOP 2\n");
-            //k1
-            solar_system_calc_gravity(&y);
-            rk45_updateSystem(&k1, y, h);
 
-            //k2
-            for (int i = 0; i < y.total_count; i++) {
-                temp.objs[i].position.x = y.objs[i].position.x + (k1.objs[i].position.x * (1.0 / 4.0));
-                temp.objs[i].position.y = y.objs[i].position.y + (k1.objs[i].position.y * (1.0 / 4.0));
-                temp.objs[i].position.z = y.objs[i].position.z + (k1.objs[i].position.z * (1.0 / 4.0));
+        while (!step_accepted){
+            rk45_k1(&k1, &y, h); 
+            
+            rk45_k2(&k2, &temp, k1, y, h);
 
-                temp.objs[i].velocity.x = y.objs[i].velocity.x + (k1.objs[i].velocity.x * (1.0 / 4.0));
-                temp.objs[i].velocity.y = y.objs[i].velocity.y + (k1.objs[i].velocity.y * (1.0 / 4.0));
-                temp.objs[i].velocity.z = y.objs[i].velocity.z + (k1.objs[i].velocity.z * (1.0 / 4.0));
+            rk45_k3(&k3, &temp, k2, k1, y, h); 
 
-            }
-            solar_system_calc_gravity(&temp);
-            rk45_updateSystem(&k2, temp, h);
+            rk45_k4(&k4, &temp, k3, k2, k1, y, h); 
 
-            //k3
-            for (int i = 0; i < y.total_count; i++) {
-                temp.objs[i].position.x = y.objs[i].position.x + (k1.objs[i].position.x * (3.0 / 32.0)) + (k2.objs[i].position.x * (9.0 / 32.0));
-                temp.objs[i].position.y = y.objs[i].position.y + (k1.objs[i].position.y * (3.0 / 32.0)) + (k2.objs[i].position.y * (9.0 / 32.0));
-                temp.objs[i].position.z = y.objs[i].position.z + (k1.objs[i].position.z * (3.0 / 32.0)) + (k2.objs[i].position.z * (9.0 / 32.0));
-
-                temp.objs[i].velocity.x = y.objs[i].velocity.x + (k1.objs[i].velocity.x * (3.0 / 32.0)) + (k2.objs[i].velocity.x * (9.0 / 32.0));
-                temp.objs[i].velocity.y = y.objs[i].velocity.y + (k1.objs[i].velocity.y * (3.0 / 32.0)) + (k2.objs[i].velocity.y * (9.0 / 32.0));
-                temp.objs[i].velocity.z = y.objs[i].velocity.z + (k1.objs[i].velocity.z * (3.0 / 32.0)) + (k2.objs[i].velocity.z * (9.0 / 32.0));
-            }
-            solar_system_calc_gravity(&temp);
-            rk45_updateSystem(&k3, temp, h);
-
-
-            //k4
-            for (int i = 0; i < y.total_count; i++) {
-                temp.objs[i].position.x = y.objs[i].position.x + (k1.objs[i].position.x * (1932.0 / 2197.0)) + (k2.objs[i].position.x * (-7200.0 / 2197.0)) + (k3.objs[i].position.x * (7296.0 / 2197.0));
-                temp.objs[i].position.y = y.objs[i].position.y + (k1.objs[i].position.y * (1932.0 / 2197.0)) + (k2.objs[i].position.y * (-7200.0 / 2197.0)) + (k3.objs[i].position.y * (7296.0 / 2197.0));
-                temp.objs[i].position.z = y.objs[i].position.z + (k1.objs[i].position.z * (1932.0 / 2197.0)) + (k2.objs[i].position.z * (-7200.0 / 2197.0)) + (k3.objs[i].position.z * (7296.0 / 2197.0));
-
-                temp.objs[i].velocity.x = y.objs[i].velocity.x + (k1.objs[i].velocity.x * (1932.0 / 2197.0)) + (k2.objs[i].velocity.x * (-7200.0 / 2197.0)) + (k3.objs[i].velocity.x * (7296.0 / 2197.0));
-                temp.objs[i].velocity.y = y.objs[i].velocity.y + (k1.objs[i].velocity.y * (1932.0 / 2197.0)) + (k2.objs[i].velocity.y * (-7200.0 / 2197.0)) + (k3.objs[i].velocity.y * (7296.0 / 2197.0));
-                temp.objs[i].velocity.z = y.objs[i].velocity.z + (k1.objs[i].velocity.z * (1932.0 / 2197.0)) + (k2.objs[i].velocity.z * (-7200.0 / 2197.0)) + (k3.objs[i].velocity.z * (7296.0 / 2197.0));
-            }
-            solar_system_calc_gravity(&temp);
-            rk45_updateSystem(&k4, temp, h);
-
-            //k5
-            for (int i = 0; i < y.total_count; i++) {
-                temp.objs[i].position.x = y.objs[i].position.x + (k1.objs[i].position.x * (439.0 / 216.0)) + (k2.objs[i].position.x * -8.0) + (k3.objs[i].position.x * (3680.0 / 513.0)) + (k4.objs[i].position.x * (-845.0 / 4104.0));
-                temp.objs[i].position.y = y.objs[i].position.y + (k1.objs[i].position.y * (439.0 / 216.0)) + (k2.objs[i].position.y * -8.0) + (k3.objs[i].position.y * (3680.0 / 513.0)) + (k4.objs[i].position.y * (-845.0 / 4104.0));
-                temp.objs[i].position.z = y.objs[i].position.z + (k1.objs[i].position.z * (439.0 / 216.0)) + (k2.objs[i].position.z * -8.0) + (k3.objs[i].position.z * (3680.0 / 513.0)) + (k4.objs[i].position.z * (-845.0 / 4104.0));
-
-                temp.objs[i].velocity.x = y.objs[i].velocity.x + (k1.objs[i].velocity.x * (439.0 / 216.0)) + (k2.objs[i].velocity.x * -8.0) + (k3.objs[i].velocity.x * (3680 / 513.0)) + (k4.objs[i].velocity.x * (-845.0 / 4104.0));
-                temp.objs[i].velocity.y = y.objs[i].velocity.y + (k1.objs[i].velocity.y * (439.0 / 216.0)) + (k2.objs[i].velocity.y * -8.0) + (k3.objs[i].velocity.y * (3680 / 513.0)) + (k4.objs[i].velocity.y * (-845.0 / 4104.0));
-                temp.objs[i].velocity.z = y.objs[i].velocity.z + (k1.objs[i].velocity.z * (439.0 / 216.0)) + (k2.objs[i].velocity.z * -8.0) + (k3.objs[i].velocity.z * (3680 / 513.0)) + (k4.objs[i].velocity.z * (-845.0 / 4104.0));
-            }
-            solar_system_calc_gravity(&temp);
-            rk45_updateSystem(&k5, temp, h);
-
-            //k6
-            for (int i = 0; i < y.total_count; i++) {
-                temp.objs[i].position.x = y.objs[i].position.x + (k1.objs[i].position.x * (-8.0 / 27.0)) + (k2.objs[i].position.x * 2.0) + (k3.objs[i].position.x * (-3544.0 / 2565.0)) + (k4.objs[i].position.x * (1859.0 / 4104.0)) + (k5.objs[i].position.x * (-11.0 / 40.0));
-                temp.objs[i].position.y = y.objs[i].position.y + (k1.objs[i].position.y * (-8.0 / 27.0)) + (k2.objs[i].position.y * 2.0) + (k3.objs[i].position.y * (-3544.0 / 2565.0)) + (k4.objs[i].position.y * (1859.0 / 4104.0)) + (k5.objs[i].position.y * (-11.0 / 40.0));
-                temp.objs[i].position.z = y.objs[i].position.z + (k1.objs[i].position.z * (-8.0 / 27.0)) + (k2.objs[i].position.z * 2.0) + (k3.objs[i].position.z * (-3544.0 / 2565.0)) + (k4.objs[i].position.z * (1859.0 / 4104.0)) + (k5.objs[i].position.z * (-11.0 / 40.0));
-
-                temp.objs[i].velocity.x = y.objs[i].velocity.x + (k1.objs[i].velocity.x * (-8.0 / 27.0)) + (k2.objs[i].velocity.x * 2.0) + (k3.objs[i].velocity.x * (-3544.0 / 2565.0)) + (k4.objs[i].velocity.x * (1859.0 / 4104.0)) + (k5.objs[i].velocity.x * (-11.0 / 40.0));
-                temp.objs[i].velocity.y = y.objs[i].velocity.y + (k1.objs[i].velocity.y * (-8.0 / 27.0)) + (k2.objs[i].velocity.y * 2.0) + (k3.objs[i].velocity.y * (-3544.0 / 2565.0)) + (k4.objs[i].velocity.y * (1859.0 / 4104.0)) + (k5.objs[i].velocity.y * (-11.0 / 40.0));
-                temp.objs[i].velocity.z = y.objs[i].velocity.z + (k1.objs[i].velocity.z * (-8.0 / 27.0)) + (k2.objs[i].velocity.z * 2.0) + (k3.objs[i].velocity.z * (-3544.0 / 2565.0)) + (k4.objs[i].velocity.z * (1859.0 / 4104.0)) + (k5.objs[i].velocity.z * (-11.0 / 40.0));
-            }
-            solar_system_calc_gravity(&temp);
-            rk45_updateSystem(&k6, temp, h);
-
+            rk45_k5(&k5, &temp, k4, k3, k2, k1, y, h);
+            
+            rk45_k6(&k6, &temp, k5, k4, k3, k2, k1, y, h);
 
             //Error correct
-            for (int i = 0; i < y.total_count; i++) {
-                y4th_orderSolution.objs[i].position.x = y.objs[i].position.x + ((25.0 / 216.0) * k1.objs[i].position.x) + ((1408.0 / 2565.0) * k3.objs[i].position.x) + ((2197.0 / 4104.0) * k4.objs[i].position.x) - ((1.0 / 5.0) * k5.objs[i].position.x);
-                y4th_orderSolution.objs[i].position.y = y.objs[i].position.y + ((25.0 / 216.0) * k1.objs[i].position.y) + ((1408.0 / 2565.0) * k3.objs[i].position.y) + ((2197.0 / 4104.0) * k4.objs[i].position.y) - ((1.0 / 5.0) * k5.objs[i].position.y);
-                y4th_orderSolution.objs[i].position.z = y.objs[i].position.z + ((25.0 / 216.0) * k1.objs[i].position.z) + ((1408.0 / 2565.0) * k3.objs[i].position.z) + ((2197.0 / 4104.0) * k4.objs[i].position.z) - ((1.0 / 5.0) * k5.objs[i].position.z);
-
-                y4th_orderSolution.objs[i].velocity.x = y.objs[i].velocity.x + ((25.0 / 216.0) * k1.objs[i].velocity.x) + ((1408.0 / 2565.0) * k3.objs[i].velocity.x) + ((2197.0 / 4104.0) * k4.objs[i].velocity.x) - ((1.0 / 5.0) * k5.objs[i].velocity.x);
-                y4th_orderSolution.objs[i].velocity.y = y.objs[i].velocity.y + ((25.0 / 216.0) * k1.objs[i].velocity.y) + ((1408.0 / 2565.0) * k3.objs[i].velocity.y) + ((2197.0 / 4104.0) * k4.objs[i].velocity.y) - ((1.0 / 5.0) * k5.objs[i].velocity.y);
-                y4th_orderSolution.objs[i].velocity.z = y.objs[i].velocity.z + ((25.0 / 216.0) * k1.objs[i].velocity.z) + ((1408.0 / 2565.0) * k3.objs[i].velocity.z) + ((2197.0 / 4104.0) * k4.objs[i].velocity.z) - ((1.0 / 5.0) * k5.objs[i].velocity.z);
-            }
-
-
-            for (int i = 0; i < y.total_count; i++) {
-                y5th_orderSolution.objs[i].position.x = y.objs[i].position.x + ((16.0 / 135.0) * k1.objs[i].position.x) + ((6656.0 / 12825.0) * k3.objs[i].position.x) + ((28561.0 / 56430.0) * k4.objs[i].position.x) - ((9.0 / 50.0) * k5.objs[i].position.x) + ((2.0 / 55.0) * k6.objs[i].position.x);
-                y5th_orderSolution.objs[i].position.y = y.objs[i].position.y + ((16.0 / 135.0) * k1.objs[i].position.y) + ((6656.0 / 12825.0) * k3.objs[i].position.y) + ((28561.0 / 56430.0) * k4.objs[i].position.y) - ((9.0/ 50.0) * k5.objs[i].position.y) + ((2.0 / 55.0) * k6.objs[i].position.y);
-                y5th_orderSolution.objs[i].position.z = y.objs[i].position.z + ((16.0 / 135.0) * k1.objs[i].position.z) + ((6656.0 / 12825.0) * k3.objs[i].position.z) + ((28561.0 / 56430.0) * k4.objs[i].position.z) - ((9.0 / 50.0) * k5.objs[i].position.z) + ((2.0 / 55.0) * k6.objs[i].position.z);
-
-                y5th_orderSolution.objs[i].velocity.x = y.objs[i].velocity.x + ((16.0 / 135.0) * k1.objs[i].velocity.x) + ((6656.0 / 12825.0) * k3.objs[i].velocity.x) + ((28561.0 / 56430.0) * k4.objs[i].velocity.x) - ((9.0 / 50.0) * k5.objs[i].velocity.x) + ((2.0 / 55.0) * k6.objs[i].velocity.x);
-                y5th_orderSolution.objs[i].velocity.y = y.objs[i].velocity.y + ((16.0 / 135.0) * k1.objs[i].velocity.y) + ((6656.0 / 12825.0) * k3.objs[i].velocity.y) + ((28561.0 / 56430.0) * k4.objs[i].velocity.y) - ((9.0 / 50.0) * k5.objs[i].velocity.y) + ((2.0 / 55.0) * k6.objs[i].velocity.y);
-                y5th_orderSolution.objs[i].velocity.z = y.objs[i].velocity.z + ((16.0 / 135.0) * k1.objs[i].velocity.z) + ((6656.0 / 12825.0) * k3.objs[i].velocity.z) + ((28561.0 / 56430.0) * k4.objs[i].velocity.z) - ((9.0 / 50.0) * k5.objs[i].velocity.z) + ((2.0 / 55.0) * k6.objs[i].velocity.z);
-            }
-
-            for (int i = 0; i < y.total_count; i++) {
-                err_pos[i] = (vec3d_t){ abs(y5th_orderSolution.objs[i].position.x - y4th_orderSolution.objs[i].position.x), abs(y5th_orderSolution.objs[i].position.y - y4th_orderSolution.objs[i].position.y), abs(y5th_orderSolution.objs[i].position.z - y4th_orderSolution.objs[i].position.z) };
-                err_vel[i] = (vec3d_t){ abs(y5th_orderSolution.objs[i].velocity.x - y4th_orderSolution.objs[i].velocity.x), abs(y5th_orderSolution.objs[i].velocity.y - y4th_orderSolution.objs[i].velocity.y), abs(y5th_orderSolution.objs[i].velocity.z - y4th_orderSolution.objs[i].velocity.z) };
-            }
-
-            for (int i = 0; i < y.total_count; i++) {
-                tolerance_pos[i] = (vec3d_t){
-                    (tol_abs_pos.x + tol_rel_pos.x * max(abs(y.objs[i].position.x), abs(y4th_orderSolution.objs[i].position.x))),
-                    (tol_abs_pos.y + tol_rel_pos.y * max(abs(y.objs[i].position.y), abs(y4th_orderSolution.objs[i].position.y))),
-                    (tol_abs_pos.z + tol_rel_pos.z * max(abs(y.objs[i].position.z), abs(y4th_orderSolution.objs[i].position.z)))
-                };
-
-                tolerance_vel[i] = (vec3d_t){
-                    (tol_abs_vel.x + tol_rel_vel.x * max(abs(y.objs[i].velocity.x), abs(y4th_orderSolution.objs[i].velocity.x))),
-                    (tol_abs_vel.y + tol_rel_vel.y * max(abs(y.objs[i].velocity.y), abs(y4th_orderSolution.objs[i].velocity.y))),
-                    (tol_abs_vel.z + tol_rel_vel.z * max(abs(y.objs[i].velocity.z), abs(y4th_orderSolution.objs[i].velocity.z)))
-                };
-
-            }
-
-
-            step_accepted = true;
-            for (int i = 0; i < y.total_count; i++) {
-                if (err_pos[i].x > tolerance_pos[i].x ||
-                    err_pos[i].y > tolerance_pos[i].y ||
-                    err_pos[i].z > tolerance_pos[i].z) {
-                    step_accepted = false;
-                    break;
-                }
-
-                if (err_vel[i].x > tolerance_vel[i].x ||
-                    err_vel[i].y > tolerance_vel[i].y ||
-                    err_vel[i].z > tolerance_vel[i].z) {
-                    step_accepted = false;
-                    break;
-                }
-            }
+            rk45_err_correct_4th_order(&y4th_orderSolution, y, k1,  k3,  k4, k5);
+            rk45_err_correct_5th_order(&y5th_orderSolution, y, k1,  k3, k4, k5, k6);
+    
+            rk45_err_vec(&errPos, &errVel, y5th_orderSolution, y4th_orderSolution);
+            
+            
+            rk45_tolerance_vec(&tolerancePos, &toleranceVel, tolAbsPos, tolRelPos, tolAbsVel, tolRelVel, y, y4th_orderSolution);
+          
+            step_accepted = rk45_check_step_acceptance(errPos, errVel, tolerancePos, toleranceVel, y.total_count); 
         }
+
+
         y = y5th_orderSolution;
         t += h;
 
         double scale_factor = 1.0;
         // Find the most restrictive scaling 
         for (int i = 0; i < y.total_count; i++) {
-            double pos_scale = min(safe_div(tolerance_pos[i].x, err_pos[i].x),
-                min(safe_div(tolerance_pos[i].y, err_pos[i].y),
-                    safe_div(tolerance_pos[i].z, err_pos[i].z)));
-            double vel_scale = min(safe_div(tolerance_vel[i].x, err_vel[i].x),
-                min(safe_div(tolerance_vel[i].y, err_vel[i].y),
-                    safe_div(tolerance_vel[i].z, err_vel[i].z)));
+            double pos_scale = min(safe_div(tolerancePos[i].x, errPos[i].x),
+                min(safe_div(tolerancePos[i].y, errPos[i].y),
+                    safe_div(tolerancePos[i].z, errPos[i].z)));
+            double vel_scale = min(safe_div(toleranceVel[i].x, errVel[i].x),
+                min(safe_div(toleranceVel[i].y, errVel[i].y),
+                    safe_div(toleranceVel[i].z, errVel[i].z)));
             scale_factor = min(scale_factor, min(pos_scale, vel_scale));
         }
         if (scale_factor < 3.0) scale_factor = 3.0; 
         h = h * 0.84 * pow(scale_factor, 0.25);
 
      }
-
 
      free(k1.objs);
      free(k2.objs);
@@ -612,6 +443,181 @@ SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_init
      y5th_orderSolution = solar_system_copy(s); //TODO: this is a bug, it get seg fault if i dont copy back to here before i free???
      free(y5th_orderSolution.objs);
 
-
      return y; 
+}
+
+void rk45_updateSystem(SolarSystem* s, const SolarSystem temp, double h) {
+    for (int i = 0; i < temp.total_count; i++) {
+        s->objs[i].position.x = temp.objs[i].velocity.x * h;
+        s->objs[i].velocity.x = temp.objs[i].accleration.x * h;
+
+        s->objs[i].position.y = temp.objs[i].velocity.y * h;
+        s->objs[i].velocity.y = temp.objs[i].accleration.y * h;
+
+        s->objs[i].position.z = temp.objs[i].velocity.z * h;
+        s->objs[i].velocity.z = temp.objs[i].accleration.z * h;
+    }
+}
+
+
+//k1 = h * f(x + A(1) * h,y)
+void rk45_k1(SolarSystem* k1, SolarSystem* y, double h) {
+    solar_system_calc_gravity(y);
+    rk45_updateSystem(k1, *y, h);
+}
+
+//NOTE: FOR COEFFICENTS LIKE B(2,1) , THIS REFERS TO A BUTCHER TABLE. WHILE FHELBERG DEFINES HIS BUTCHER TABLES FROM INIT K = 0, JOHN BUTCHER'S SYNTAX USES INIT K=1 INDEXING. AS SUCH, K1 FOR US IS ROW 0 IN THE BUTCHER TABLE SEE: https://www.math.auckland.ac.nz/~butcher/ODE-book-2008/Tutorials/RK-methods.pdf
+//IN PRACTICE, THIS MEANS THAT B(2,1) BELOW ACTUALLY REFERS TO B(1,1) IN FHELBERG'S BUTCHER TABLES
+//k2 = h * f(x+ A(2) * h,y + B(2,1) * k1
+void rk45_k2(SolarSystem* k2, SolarSystem* temp, const SolarSystem k1, const SolarSystem y, double h) {
+    for (int i = 0; i < y.total_count; i++) {
+        temp->objs[i].position.x = y.objs[i].position.x + (k1.objs[i].position.x * (1.0 / 4.0));
+        temp->objs[i].position.y = y.objs[i].position.y + (k1.objs[i].position.y * (1.0 / 4.0));
+        temp->objs[i].position.z = y.objs[i].position.z + (k1.objs[i].position.z * (1.0 / 4.0));
+
+        temp->objs[i].velocity.x = y.objs[i].velocity.x + (k1.objs[i].velocity.x * (1.0 / 4.0));
+        temp->objs[i].velocity.y = y.objs[i].velocity.y + (k1.objs[i].velocity.y * (1.0 / 4.0));
+        temp->objs[i].velocity.z = y.objs[i].velocity.z + (k1.objs[i].velocity.z * (1.0 / 4.0));
+
+    }
+    solar_system_calc_gravity(temp);
+    rk45_updateSystem(k2, *temp, h);
+}
+
+//k3 = h * f(x + A(3) * h,y + B(3,1) + k1 + B(3,2) * k2 
+void rk45_k3(SolarSystem* k3,  SolarSystem* temp, const SolarSystem k2,  const SolarSystem k1, const SolarSystem y, double h) {
+    for (int i = 0; i < y.total_count; i++) {
+        temp->objs[i].position.x = y.objs[i].position.x + (k1.objs[i].position.x * (3.0 / 32.0)) + (k2.objs[i].position.x * (9.0 / 32.0));
+        temp->objs[i].position.y = y.objs[i].position.y + (k1.objs[i].position.y * (3.0 / 32.0)) + (k2.objs[i].position.y * (9.0 / 32.0));
+        temp->objs[i].position.z = y.objs[i].position.z + (k1.objs[i].position.z * (3.0 / 32.0)) + (k2.objs[i].position.z * (9.0 / 32.0));
+
+        temp->objs[i].velocity.x = y.objs[i].velocity.x + (k1.objs[i].velocity.x * (3.0 / 32.0)) + (k2.objs[i].velocity.x * (9.0 / 32.0));
+        temp->objs[i].velocity.y = y.objs[i].velocity.y + (k1.objs[i].velocity.y * (3.0 / 32.0)) + (k2.objs[i].velocity.y * (9.0 / 32.0));
+        temp->objs[i].velocity.z = y.objs[i].velocity.z + (k1.objs[i].velocity.z * (3.0 / 32.0)) + (k2.objs[i].velocity.z * (9.0 / 32.0));
+    }
+    solar_system_calc_gravity(temp);
+    rk45_updateSystem(k3, *temp, h);
+
+}
+
+//k4 = h * f(x + A(4) * h,y + B(4,1)*k1 + B(4,2)*k2 + B(4,3)*k3
+void rk45_k4(SolarSystem* k4, SolarSystem* temp, const SolarSystem k3, const SolarSystem k2, const SolarSystem k1, const SolarSystem y, double h) {
+
+    for (int i = 0; i < y.total_count; i++) {
+        temp->objs[i].position.x = y.objs[i].position.x + (k1.objs[i].position.x * (1932.0 / 2197.0)) + (k2.objs[i].position.x * (-7200.0 / 2197.0)) + (k3.objs[i].position.x * (7296.0 / 2197.0));
+        temp->objs[i].position.y = y.objs[i].position.y + (k1.objs[i].position.y * (1932.0 / 2197.0)) + (k2.objs[i].position.y * (-7200.0 / 2197.0)) + (k3.objs[i].position.y * (7296.0 / 2197.0));
+        temp->objs[i].position.z = y.objs[i].position.z + (k1.objs[i].position.z * (1932.0 / 2197.0)) + (k2.objs[i].position.z * (-7200.0 / 2197.0)) + (k3.objs[i].position.z * (7296.0 / 2197.0));
+
+        temp->objs[i].velocity.x = y.objs[i].velocity.x + (k1.objs[i].velocity.x * (1932.0 / 2197.0)) + (k2.objs[i].velocity.x * (-7200.0 / 2197.0)) + (k3.objs[i].velocity.x * (7296.0 / 2197.0));
+        temp->objs[i].velocity.y = y.objs[i].velocity.y + (k1.objs[i].velocity.y * (1932.0 / 2197.0)) + (k2.objs[i].velocity.y * (-7200.0 / 2197.0)) + (k3.objs[i].velocity.y * (7296.0 / 2197.0));
+        temp->objs[i].velocity.z = y.objs[i].velocity.z + (k1.objs[i].velocity.z * (1932.0 / 2197.0)) + (k2.objs[i].velocity.z * (-7200.0 / 2197.0)) + (k3.objs[i].velocity.z * (7296.0 / 2197.0));
+    }
+    solar_system_calc_gravity(temp);
+    rk45_updateSystem(k4, *temp, h);
+}
+
+//k5 = h * f(x + A(5) * h,y + B(5,1)*k1 + B(5,2)*k2 + B(5,3)*k3 + B(5,4)*k4
+void rk45_k5(SolarSystem* k5, SolarSystem* temp, const SolarSystem k4, const SolarSystem k3, const SolarSystem k2, const SolarSystem k1, const SolarSystem y, double h) {
+    for (int i = 0; i < y.total_count; i++) {
+        temp->objs[i].position.x = y.objs[i].position.x + (k1.objs[i].position.x * (439.0 / 216.0)) + (k2.objs[i].position.x * -8.0) + (k3.objs[i].position.x * (3680.0 / 513.0)) + (k4.objs[i].position.x * (-845.0 / 4104.0));
+        temp->objs[i].position.y = y.objs[i].position.y + (k1.objs[i].position.y * (439.0 / 216.0)) + (k2.objs[i].position.y * -8.0) + (k3.objs[i].position.y * (3680.0 / 513.0)) + (k4.objs[i].position.y * (-845.0 / 4104.0));
+        temp->objs[i].position.z = y.objs[i].position.z + (k1.objs[i].position.z * (439.0 / 216.0)) + (k2.objs[i].position.z * -8.0) + (k3.objs[i].position.z * (3680.0 / 513.0)) + (k4.objs[i].position.z * (-845.0 / 4104.0));
+
+        temp->objs[i].velocity.x = y.objs[i].velocity.x + (k1.objs[i].velocity.x * (439.0 / 216.0)) + (k2.objs[i].velocity.x * -8.0) + (k3.objs[i].velocity.x * (3680 / 513.0)) + (k4.objs[i].velocity.x * (-845.0 / 4104.0));
+        temp->objs[i].velocity.y = y.objs[i].velocity.y + (k1.objs[i].velocity.y * (439.0 / 216.0)) + (k2.objs[i].velocity.y * -8.0) + (k3.objs[i].velocity.y * (3680 / 513.0)) + (k4.objs[i].velocity.y * (-845.0 / 4104.0));
+        temp->objs[i].velocity.z = y.objs[i].velocity.z + (k1.objs[i].velocity.z * (439.0 / 216.0)) + (k2.objs[i].velocity.z * -8.0) + (k3.objs[i].velocity.z * (3680 / 513.0)) + (k4.objs[i].velocity.z * (-845.0 / 4104.0));
+    }
+    solar_system_calc_gravity(temp);
+    rk45_updateSystem(k5, *temp, h);
+
+}
+
+//k6 = h * f(x + A(6) * h,y + B(6,1)*k1 + B(6,2)*k2 + B(6,3)*k3 + B(6,4)*k4 + B(6,5)*k5
+void rk45_k6(SolarSystem* k6, SolarSystem* temp, const SolarSystem k5, const SolarSystem k4, const SolarSystem k3, const SolarSystem k2, const SolarSystem k1, const SolarSystem y, double h) {
+    for (int i = 0; i < y.total_count; i++) {
+        temp->objs[i].position.x = y.objs[i].position.x + (k1.objs[i].position.x * (-8.0 / 27.0)) + (k2.objs[i].position.x * 2.0) + (k3.objs[i].position.x * (-3544.0 / 2565.0)) + (k4.objs[i].position.x * (1859.0 / 4104.0)) + (k5.objs[i].position.x * (-11.0 / 40.0));
+        temp->objs[i].position.y = y.objs[i].position.y + (k1.objs[i].position.y * (-8.0 / 27.0)) + (k2.objs[i].position.y * 2.0) + (k3.objs[i].position.y * (-3544.0 / 2565.0)) + (k4.objs[i].position.y * (1859.0 / 4104.0)) + (k5.objs[i].position.y * (-11.0 / 40.0));
+        temp->objs[i].position.z = y.objs[i].position.z + (k1.objs[i].position.z * (-8.0 / 27.0)) + (k2.objs[i].position.z * 2.0) + (k3.objs[i].position.z * (-3544.0 / 2565.0)) + (k4.objs[i].position.z * (1859.0 / 4104.0)) + (k5.objs[i].position.z * (-11.0 / 40.0));
+
+        temp->objs[i].velocity.x = y.objs[i].velocity.x + (k1.objs[i].velocity.x * (-8.0 / 27.0)) + (k2.objs[i].velocity.x * 2.0) + (k3.objs[i].velocity.x * (-3544.0 / 2565.0)) + (k4.objs[i].velocity.x * (1859.0 / 4104.0)) + (k5.objs[i].velocity.x * (-11.0 / 40.0));
+        temp->objs[i].velocity.y = y.objs[i].velocity.y + (k1.objs[i].velocity.y * (-8.0 / 27.0)) + (k2.objs[i].velocity.y * 2.0) + (k3.objs[i].velocity.y * (-3544.0 / 2565.0)) + (k4.objs[i].velocity.y * (1859.0 / 4104.0)) + (k5.objs[i].velocity.y * (-11.0 / 40.0));
+        temp->objs[i].velocity.z = y.objs[i].velocity.z + (k1.objs[i].velocity.z * (-8.0 / 27.0)) + (k2.objs[i].velocity.z * 2.0) + (k3.objs[i].velocity.z * (-3544.0 / 2565.0)) + (k4.objs[i].velocity.z * (1859.0 / 4104.0)) + (k5.objs[i].velocity.z * (-11.0 / 40.0));
+    }
+    solar_system_calc_gravity(temp);
+    rk45_updateSystem(k6, *temp, h);
+}
+
+
+//WEIGHTED AVERAGE = y(x+h) = y(x) + CH(1)*k1 + CH(2)*k2 + CH(3)*k3 + CH(4)*k4 + CH(5)*k5 + CH(6)*k6
+//CH(k) = BUTCHER TABLE VALUES
+
+void rk45_err_correct_4th_order(SolarSystem *y4th_orderSolution, const SolarSystem y, const SolarSystem k1, const SolarSystem k3, const SolarSystem k4, const SolarSystem k5) {
+    for (int i = 0; i < y.total_count; i++) {
+        y4th_orderSolution->objs[i].position.x = y.objs[i].position.x + ((25.0 / 216.0) * k1.objs[i].position.x) + ((1408.0 / 2565.0) * k3.objs[i].position.x) + ((2197.0 / 4104.0) * k4.objs[i].position.x) - ((1.0 / 5.0) * k5.objs[i].position.x);
+        y4th_orderSolution->objs[i].position.y = y.objs[i].position.y + ((25.0 / 216.0) * k1.objs[i].position.y) + ((1408.0 / 2565.0) * k3.objs[i].position.y) + ((2197.0 / 4104.0) * k4.objs[i].position.y) - ((1.0 / 5.0) * k5.objs[i].position.y);
+        y4th_orderSolution->objs[i].position.z = y.objs[i].position.z + ((25.0 / 216.0) * k1.objs[i].position.z) + ((1408.0 / 2565.0) * k3.objs[i].position.z) + ((2197.0 / 4104.0) * k4.objs[i].position.z) - ((1.0 / 5.0) * k5.objs[i].position.z);
+
+        y4th_orderSolution->objs[i].velocity.x = y.objs[i].velocity.x + ((25.0 / 216.0) * k1.objs[i].velocity.x) + ((1408.0 / 2565.0) * k3.objs[i].velocity.x) + ((2197.0 / 4104.0) * k4.objs[i].velocity.x) - ((1.0 / 5.0) * k5.objs[i].velocity.x);
+        y4th_orderSolution->objs[i].velocity.y = y.objs[i].velocity.y + ((25.0 / 216.0) * k1.objs[i].velocity.y) + ((1408.0 / 2565.0) * k3.objs[i].velocity.y) + ((2197.0 / 4104.0) * k4.objs[i].velocity.y) - ((1.0 / 5.0) * k5.objs[i].velocity.y);
+        y4th_orderSolution->objs[i].velocity.z = y.objs[i].velocity.z + ((25.0 / 216.0) * k1.objs[i].velocity.z) + ((1408.0 / 2565.0) * k3.objs[i].velocity.z) + ((2197.0 / 4104.0) * k4.objs[i].velocity.z) - ((1.0 / 5.0) * k5.objs[i].velocity.z);
+    }
+
+
+
+}
+
+void rk45_err_correct_5th_order(SolarSystem *y5th_orderSolution, const SolarSystem y, const SolarSystem k1, const SolarSystem k3, const SolarSystem k4, const SolarSystem k5, const SolarSystem k6){
+    for (int i = 0; i < y.total_count; i++) {
+        y5th_orderSolution->objs[i].position.x = y.objs[i].position.x + ((16.0 / 135.0) * k1.objs[i].position.x) + ((6656.0 / 12825.0) * k3.objs[i].position.x) + ((28561.0 / 56430.0) * k4.objs[i].position.x) - ((9.0 / 50.0) * k5.objs[i].position.x) + ((2.0 / 55.0) * k6.objs[i].position.x);
+        y5th_orderSolution->objs[i].position.y = y.objs[i].position.y + ((16.0 / 135.0) * k1.objs[i].position.y) + ((6656.0 / 12825.0) * k3.objs[i].position.y) + ((28561.0 / 56430.0) * k4.objs[i].position.y) - ((9.0 / 50.0) * k5.objs[i].position.y) + ((2.0 / 55.0) * k6.objs[i].position.y);
+        y5th_orderSolution->objs[i].position.z = y.objs[i].position.z + ((16.0 / 135.0) * k1.objs[i].position.z) + ((6656.0 / 12825.0) * k3.objs[i].position.z) + ((28561.0 / 56430.0) * k4.objs[i].position.z) - ((9.0 / 50.0) * k5.objs[i].position.z) + ((2.0 / 55.0) * k6.objs[i].position.z);
+
+        y5th_orderSolution->objs[i].velocity.x = y.objs[i].velocity.x + ((16.0 / 135.0) * k1.objs[i].velocity.x) + ((6656.0 / 12825.0) * k3.objs[i].velocity.x) + ((28561.0 / 56430.0) * k4.objs[i].velocity.x) - ((9.0 / 50.0) * k5.objs[i].velocity.x) + ((2.0 / 55.0) * k6.objs[i].velocity.x);
+        y5th_orderSolution->objs[i].velocity.y = y.objs[i].velocity.y + ((16.0 / 135.0) * k1.objs[i].velocity.y) + ((6656.0 / 12825.0) * k3.objs[i].velocity.y) + ((28561.0 / 56430.0) * k4.objs[i].velocity.y) - ((9.0 / 50.0) * k5.objs[i].velocity.y) + ((2.0 / 55.0) * k6.objs[i].velocity.y);
+        y5th_orderSolution->objs[i].velocity.z = y.objs[i].velocity.z + ((16.0 / 135.0) * k1.objs[i].velocity.z) + ((6656.0 / 12825.0) * k3.objs[i].velocity.z) + ((28561.0 / 56430.0) * k4.objs[i].velocity.z) - ((9.0 / 50.0) * k5.objs[i].velocity.z) + ((2.0 / 55.0) * k6.objs[i].velocity.z);
+    }
+}
+
+void rk45_err_vec(vec3d_t *errPos, vec3d_t *errVel, SolarSystem y5th_orderSolution, SolarSystem y4th_orderSolution) {
+    for (int i = 0; i < y5th_orderSolution.total_count; i++) {
+        errPos[i] = (vec3d_t){ abs(y5th_orderSolution.objs[i].position.x - y4th_orderSolution.objs[i].position.x), abs(y5th_orderSolution.objs[i].position.y - y4th_orderSolution.objs[i].position.y), abs(y5th_orderSolution.objs[i].position.z - y4th_orderSolution.objs[i].position.z) };
+        errVel[i] = (vec3d_t){ abs(y5th_orderSolution.objs[i].velocity.x - y4th_orderSolution.objs[i].velocity.x), abs(y5th_orderSolution.objs[i].velocity.y - y4th_orderSolution.objs[i].velocity.y), abs(y5th_orderSolution.objs[i].velocity.z - y4th_orderSolution.objs[i].velocity.z) };
+    }
+
+}
+void rk45_tolerance_vec(vec3d_t* tolerancePos, vec3d_t* toleranceVel, vec3d_t tolAbsPos, vec3d_t tolRelPos, vec3d_t tolAbsVel, vec3d_t tolRelVel, SolarSystem y, SolarSystem y4th_orderSolution) {
+    for (int i = 0; i < y.total_count; i++) {
+        tolerancePos[i] = (vec3d_t){
+            (tolAbsPos.x + tolRelPos.x * max(abs(y.objs[i].position.x), abs(y4th_orderSolution.objs[i].position.x))),
+            (tolAbsPos.y + tolRelPos.y * max(abs(y.objs[i].position.y), abs(y4th_orderSolution.objs[i].position.y))),
+            (tolAbsPos.z + tolRelPos.z * max(abs(y.objs[i].position.z), abs(y4th_orderSolution.objs[i].position.z)))
+        };
+
+        toleranceVel[i] = (vec3d_t){
+            (tolAbsVel.x + tolRelVel.x * max(abs(y.objs[i].velocity.x), abs(y4th_orderSolution.objs[i].velocity.x))),
+            (tolAbsVel.y + tolRelVel.y * max(abs(y.objs[i].velocity.y), abs(y4th_orderSolution.objs[i].velocity.y))),
+            (tolAbsVel.z + tolRelVel.z * max(abs(y.objs[i].velocity.z), abs(y4th_orderSolution.objs[i].velocity.z)))
+        };
+
+    }
+}
+
+bool rk45_check_step_acceptance(vec3d_t *errPos, vec3d_t *errVel, vec3d_t *tolerancePos, vec3d_t *toleranceVel, int total_count) {
+    bool step_accepted = true;
+    for (int i = 0; i < total_count; i++) {
+        if (errPos[i].x > tolerancePos[i].x ||
+            errPos[i].y > tolerancePos[i].y ||
+            errPos[i].z > tolerancePos[i].z) {
+            step_accepted = false;
+            break;
+        }
+
+        if (errVel[i].x > toleranceVel[i].x ||
+            errVel[i].y > toleranceVel[i].y ||
+            errVel[i].z > toleranceVel[i].z) {
+            step_accepted = false;
+            break;
+        }
+    }
+    return step_accepted;
 }
