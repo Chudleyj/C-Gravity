@@ -38,7 +38,7 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     
-    SolarSystem sol = solar_obj_make_solar_system(); 
+    SolarSystem sol = solar_system_init();
   
     Shader shader = shader_create("vertex.glsl", "fragment.glsl");
     vec3_t lightPos = (vec3_t){ 1.2f, 1.0f, 2.0f };
