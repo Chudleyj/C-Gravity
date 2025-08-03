@@ -1,6 +1,6 @@
 ﻿#include "solarsystem.h"
 
-SolarSystem solar_obj_make_solar_system() {
+SolarSystem solar_system_init() {
     vector_result_t vecRes;
 
    vec3d_t objPositions[] = {
