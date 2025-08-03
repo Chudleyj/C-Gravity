@@ -116,11 +116,11 @@ void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_
 
 
 float solar_obj_check_collision(const SolarObj *obj1, const SolarObj *obj2) {
-    float dx = obj2->position.x - obj1->position.x;
-    float dy = obj2->position.y - obj1->position.y;
-    float dz = obj2->position.z - obj1->position.z;
+    double dx = obj2->position.x - obj1->position.x;
+    double dy = obj2->position.y - obj1->position.y;
+    double dz = obj2->position.z - obj1->position.z;
 
-    float distance = sqrt(dx * dx + dy * dy + dz * dz);
+    double distance = sqrt(dx * dx + dy * dy + dz * dz);
     if ((obj2->radius/obj2->scale) + (obj1->radius/obj1->scale) > distance) {
         return -0.2f;
     }
