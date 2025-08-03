@@ -11,31 +11,15 @@ Work in progress, gods speed if you try to build/run this on your PC in its curr
 
 Examples: 
 
+Please excuse the choppy lighting in the below examples for now, it is much smoother when I am running it versus how it comes out in the recordings, but I plan to redo lighting and add textures in the future which will *hopefully* make better videos.
 
-https://github.com/user-attachments/assets/a7df1eb2-65df-418d-b219-946224e0917d
+https://github.com/user-attachments/assets/f81072e6-05d7-4fb8-a190-0f096e87dc14
 
+Overhead shot:
 
+https://github.com/user-attachments/assets/92780b8d-4c4d-4419-abcf-5e280bca903c
 
+Zoom in to show there are moon orbits:
 
-
-https://github.com/user-attachments/assets/d7123a6e-879a-41a4-b65d-d3469b56f8ee
-
-
-
-
-
-
-
-
-
-
-
-
-https://github.com/user-attachments/assets/06467e75-4843-4157-ad43-64019a78ed96
-
-
-https://github.com/user-attachments/assets/c5b0936e-d561-48b4-9096-30d158d19815
-
-
-https://github.com/user-attachments/assets/f5549640-5cdc-449c-b670-0c60218706e0
+https://github.com/user-attachments/assets/a5d7e700-452b-484b-ac79-9cc453a9ac17
 
