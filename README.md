@@ -11,7 +11,7 @@ Coefficients used in the algorithm can also be found in the above, though one ma
 Work in progress, gods speed if you try to build/run this on your PC in its current state. 
 
 <br>
-<br>
+
 
 # Examples: 
 
@@ -28,7 +28,7 @@ Zoom in to show there are moon orbits:
 https://github.com/user-attachments/assets/a5d7e700-452b-484b-ac79-9cc453a9ac17
 
 <br>
-<br>
+
 
 # A note on *Low-Order Classical Runge-Kutta Formulas with Stepsize Control and Their Application to Some Heat Transfer Problems*:
 
