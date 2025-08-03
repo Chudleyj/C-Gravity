@@ -69,7 +69,7 @@ typedef struct {
 GLvec3_t solar_obj_draw_sphere(float radius);
 void solar_obj_init_moon(SolarObj* moon, const SolarObj* parent, const MoonData* moon_data);
 void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_t color, float mass, float density, float scale);
-float solar_obj_check_collision(const SolarObj *obj1, const SolarObj *obj2);
+double solar_obj_check_collision(const SolarObj *obj1, const SolarObj *obj2);
 vec3d_t solar_obj_log_scale_positions(const vec3d_t realPosition);
 static void solar_obj_init_VAO_VBO(GLuint* VAO, GLuint* VBO, const float* vertices, size_t vertexCount);
 

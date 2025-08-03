@@ -115,7 +115,7 @@ void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_
 }
 
 
-float solar_obj_check_collision(const SolarObj *obj1, const SolarObj *obj2) {
+double solar_obj_check_collision(const SolarObj *obj1, const SolarObj *obj2) {
     double dx = obj2->position.x - obj1->position.x;
     double dy = obj2->position.y - obj1->position.y;
     double dz = obj2->position.z - obj1->position.z;

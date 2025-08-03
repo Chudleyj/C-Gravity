@@ -103,7 +103,7 @@ void drawToScreen(SolarSystem* s, Shader shader) {
             compareObj = &s->objs[j];
             if (currentObj != compareObj) {
                 if (compareObj != currentObj) {
-                   float bounce = solar_obj_check_collision(currentObj, compareObj);
+                   double bounce = solar_obj_check_collision(currentObj, compareObj);
                     currentObj->velocity.x *= bounce;
                     currentObj->velocity.y *= bounce;
                     currentObj->velocity.z *= bounce;
