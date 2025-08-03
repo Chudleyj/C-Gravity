@@ -130,10 +130,10 @@ void drawToScreen(SolarSystem* s, Shader shader) {
             vec3d_t moonRelToParent; 
             vec3d_subtract(currentObj->position, parent->position, &moonRelToParent);
             
-            float moonVisScale = 40.0f;
+            double moonVisScale = 40.0;
             //Mar's moons are so tiny we gotta shoot them out even more visually. 
             if (currentObj->parent_id == MARS) {
-                moonVisScale *= 20.0f;
+                moonVisScale *= 20.0;
             }
             moonRelToParent = (vec3d_t){ 
                 moonRelToParent.x * moonVisScale,  
