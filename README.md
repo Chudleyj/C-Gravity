@@ -51,7 +51,7 @@ The RKF45 method remains a cornerstone of numerical ODE solvers. Fehlberg's 1969
 
 ## The Reported Error
 
-Fehlberg's Table III (page 13) presents the coefficients for the 4th- and 5th-order formulas. The last two columns in that table are:
+Fehlberg's Table III (page 13) presents the coefficients for the 4th- and 5th-order formulas. At K=3 in that table are:
 
 - $C_K = \frac{2197}{4104}$
 - $C_K^{\hat{}} = \frac{28561}{56430}$
