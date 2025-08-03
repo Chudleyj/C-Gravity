@@ -47,7 +47,7 @@ void vector_generic_error_handle(vector_result_t err, const char* msg, vector_er
 
 static vector_result_t GLvec3_expand(GLvec3_t *vec) {
     if (!vec) return VECTOR_ERROR_EMPTY;
-    float *tempData, *tempy, *tempz;
+    float *tempData = NULL, *tempy = NULL, *tempz=NULL;
     int newCapacity = vec->capacity * 2; 
     tempData = realloc(vec->data, sizeof(float) * newCapacity);
     if (!tempData){
@@ -242,7 +242,7 @@ vector_result_t vec3_cross_product(const vec3_t srcVec1, const vec3_t srcVec2, v
 }
 
 vec3_t vec3_sphericalToCartesian(float rho, float theta, float phi) {
-    vec3_t cartesian;
+    vec3_t cartesian = { 0 };
     cartesian.x = rho * sinf(theta) * cosf(phi);
     cartesian.y = rho * sinf(theta) * sinf(phi);
     cartesian.z = rho * cosf(theta);
@@ -293,7 +293,7 @@ C[row][col] = A[row][0] * B[0][col] +
               A[row][3] * B[3][col];
 */
 mat4_t mat4_multilply(mat4_t A, mat4_t B) {
-    mat4_t C; 
+    mat4_t C = { 0 };
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             C.column[i].row[j] = 0; 
@@ -380,12 +380,12 @@ mat4_t mat4_rotate(const mat4_t mat, const float angle, const vec3_t vec) {
     vec3_t axis = vec;
     vec3_normalize(&axis);
 
-    vec3_t temp;
+    vec3_t temp = { 0 };
     temp.x = (1.0f - c) * axis.x;
     temp.y = (1.0f - c) * axis.y;
     temp.z = (1.0f - c) * axis.z;
 
-    mat4_t rotate; 
+    mat4_t rotate = { 0 };
 
     rotate.column[0].row[0] = c + temp.x * axis.x; 
     rotate.column[0].row[1] = temp.x * axis.y + s * axis.z;

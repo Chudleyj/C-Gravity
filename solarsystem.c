@@ -1,7 +1,7 @@
 ﻿#include "solarsystem.h"
 
 SolarSystem solar_system_init() {
-    vector_result_t vecRes;
+    vector_result_t vecRes = { 0 };
 
    vec3d_t objPositions[] = {
         (vec3d_t){0.0, 0.0, 0.0},                                      // Sun at origin
@@ -82,7 +82,7 @@ SolarSystem solar_system_init() {
    };
 
 
-   SolarSystem sol;
+   SolarSystem sol = { 0 };
    sol.objs = malloc(sizeof(SolarObj) * TOTAL_OBJECTS);
    if (sol.objs == NULL) {
        printf("SOL MALLOC FAIL\n");
@@ -199,7 +199,7 @@ void solar_system_calc_gravity(SolarSystem* s) {
 }
 
 SolarSystem solar_system_copy(SolarSystem src) {
-    SolarSystem dest;
+    SolarSystem dest = { 0 };
     dest.total_count = src.total_count;
 
     dest.objs = malloc(sizeof(SolarObj) * src.total_count);
@@ -361,7 +361,7 @@ k2.vel = h*temp.accl
 
 SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_initial, vec3d_t tolAbsPos, vec3d_t tolAbsVel, vec3d_t tolRelPos, vec3d_t tolRelVel) {
     SolarSystem y, k1, k2, k3, k4, k5, k6, temp, y4th_orderSolution, y5th_orderSolution;
-    vector_result_t vecRes; 
+    vector_result_t vecRes = { 0 };
 
     y = solar_system_copy(s);
     k1 = solar_system_copy(s);
@@ -377,10 +377,10 @@ SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_init
     double h = h_initial; 
     double t = initTime; 
    
-    vec3d_t errPos[TOTAL_OBJECTS];
-    vec3d_t errVel[TOTAL_OBJECTS];
-    vec3d_t tolerancePos[TOTAL_OBJECTS];
-    vec3d_t toleranceVel[TOTAL_OBJECTS];
+    vec3d_t errPos[TOTAL_OBJECTS] = { 0 };
+    vec3d_t errVel[TOTAL_OBJECTS] = { 0 };
+    vec3d_t tolerancePos[TOTAL_OBJECTS] = { 0 };
+    vec3d_t toleranceVel[TOTAL_OBJECTS] = { 0 };
     while (t < finalTime) {
         if (t + h > finalTime) {
             h = finalTime - t;

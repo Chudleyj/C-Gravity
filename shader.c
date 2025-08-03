@@ -62,7 +62,7 @@ Shader shader_create(const char* vertexPath, const char* fragmentPath) {
     glCompileShader(fragment);
     shader_checkCompileErrors(fragment, "FRAGMENT");
 
-    Shader newShader;
+    Shader newShader = { 0 };
     newShader.ID = glCreateProgram();
     glAttachShader(newShader.ID, vertex);
     glAttachShader(newShader.ID, fragment);

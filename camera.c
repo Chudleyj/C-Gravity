@@ -5,7 +5,7 @@ static void update_camera_vectors(Camera* cam) {
     float yaw_rad = degrees_to_radians(cam->yaw);
     float pitch_rad = degrees_to_radians(cam->pitch);
 
-    vec3_t front;
+    vec3_t front = { 0 };
 
     front.x = cosf(yaw_rad) * cosf(pitch_rad);
     front.y = sinf(pitch_rad);
@@ -27,7 +27,7 @@ static void update_camera_vectors(Camera* cam) {
 }
 
 Camera camera_init_vectors(vec3_t position, vec3_t up, float yaw, float pitch){
-    Camera cam; 
+    Camera cam = { 0 };
 
     cam.front = (vec3_t){ 0.0f, 0.0f, -1.0f };
     cam.movementSpeed = SPEED; 
@@ -44,7 +44,7 @@ Camera camera_init_vectors(vec3_t position, vec3_t up, float yaw, float pitch){
 }
 
 Camera camera_init_scalar(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) {
-    Camera cam; 
+    Camera cam = { 0 };
 
     cam.front = (vec3_t){ 0.0f, 0.0f, -1.0f };
     cam.movementSpeed = SPEED;
