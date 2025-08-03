@@ -32,7 +32,7 @@ https://github.com/user-attachments/assets/a5d7e700-452b-484b-ac79-9cc453a9ac17
 
 # A note on *Low-Order Classical Runge-Kutta Formulas with Stepsize Control and Their Application to Some Heat Transfer Problems*:
 
-For those who are curious, a draft of the below is presented encompassing a larger work related to this project:
+For those who are curious, a draft of the below is presented which is part of a larger work related to this project:
 
 
 ## A Correction to the Truncation Error Coefficient for the Runge-Kutta-Fehlberg (RKF45) Method in *Low-Order Classical Runge-Kutta Formulas with Stepsize Control and their Application to Some Heat Transfer Problems* (NASA TR R-315, 1969)
