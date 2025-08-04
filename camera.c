@@ -2,8 +2,8 @@
 #include <stdio.h>
 static void update_camera_vectors(Camera* cam) {
 
-    float yaw_rad = degrees_to_radians(cam->yaw);
-    float pitch_rad = degrees_to_radians(cam->pitch);
+    float yaw_rad = (float)degrees_to_radians(cam->yaw);
+    float pitch_rad = (float)degrees_to_radians(cam->pitch);
 
     vec3_t front = { 0 };
 

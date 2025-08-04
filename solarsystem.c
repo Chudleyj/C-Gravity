@@ -1,13 +1,11 @@
 ﻿#include "solarsystem.h"
 
 SolarSystem solar_system_init() {
-    vector_result_t vecRes = { 0 };
-
-   vec3d_t objPositions[] = {
+     vec3d_t objPositions[] = {
         (vec3d_t){0.0, 0.0, 0.0},                                      // Sun at origin
         (vec3d_t){5.791e10 * METER_TO_OPENGL, 0.0, 0.0},              // Mercury at 0.39 AU
         (vec3d_t){1.082e11 * METER_TO_OPENGL, 0.0, 0.0},              // Venus at 0.72 AU
-        (vec3d_t){AU_IN_METERS * METER_TO_OPENGL, 0.0, 0.0},          // Earth at 1 AU
+        (vec3d_t){(double)AU_IN_METERS * METER_TO_OPENGL, 0.0, 0.0},          // Earth at 1 AU
         (vec3d_t){2.279e11 * METER_TO_OPENGL, 0.0, 0.0},              // Mars at 1.52 AU
         (vec3d_t){7.785e11 * METER_TO_OPENGL, 0.0, 0.0},              // Jupiter at 5.2 AU
         (vec3d_t){1.4335e12 * METER_TO_OPENGL, 0.0, 0.0},             // Saturn at 9.58 AU
@@ -180,7 +178,7 @@ void solar_system_calc_gravity(SolarSystem* s) {
                 vec3d_subtract(compareObj->position, currentObj->position, &direction);
 
                 double distance = sqrt((direction.x * direction.x) + (direction.y * direction.y) + (direction.z * direction.z));
-                double minDist = (double)((currentObj->radius / currentObj->scale) + (compareObj->radius / compareObj->scale)) * 1.1;
+                double minDist = (double)((currentObj->radius / currentObj->scale) + (double)(compareObj->radius / compareObj->scale)) * 1.1;
                 if (distance < minDist) distance = minDist;
 
                 double distanceCubed = distance * distance * distance;
@@ -201,10 +199,14 @@ void solar_system_calc_gravity(SolarSystem* s) {
 SolarSystem solar_system_copy(SolarSystem src) {
     SolarSystem dest = { 0 };
     dest.total_count = src.total_count;
+    dest.planet_count = src.planet_count;
+    dest.moon_count = src.moon_count;
 
     dest.objs = malloc(sizeof(SolarObj) * src.total_count);
-    if(dest.objs)
-
+    if (dest.objs == NULL) {
+        printf("SOL COPY MALLOC FAIL\n"); 
+        exit(EXIT_FAILURE); 
+    }
 
     for (int i = 0; i < src.total_count; i++) {
         dest.objs[i] = src.objs[i];
@@ -359,9 +361,9 @@ k2.vel = h*temp.accl
 
 */
 
+
 SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_initial, vec3d_t tolAbsPos, vec3d_t tolAbsVel, vec3d_t tolRelPos, vec3d_t tolRelVel) {
     SolarSystem y, k1, k2, k3, k4, k5, k6, temp, y4th_orderSolution, y5th_orderSolution;
-    vector_result_t vecRes = { 0 };
 
     y = solar_system_copy(s);
     k1 = solar_system_copy(s);
@@ -404,10 +406,9 @@ SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_init
             rk45_err_correct_4th_order(&y4th_orderSolution, y, k1,  k3,  k4, k5);
             rk45_err_correct_5th_order(&y5th_orderSolution, y, k1,  k3, k4, k5, k6);
     
-            rk45_err_vec(&errPos, &errVel, y5th_orderSolution, y4th_orderSolution);
+            rk45_err_vec(errPos, errVel, y5th_orderSolution, y4th_orderSolution);
             
-            
-            rk45_tolerance_vec(&tolerancePos, &toleranceVel, tolAbsPos, tolRelPos, tolAbsVel, tolRelVel, y, y4th_orderSolution);
+            rk45_tolerance_vec(tolerancePos, toleranceVel, tolAbsPos, tolRelPos, tolAbsVel, tolRelVel, y, y4th_orderSolution);
           
             step_accepted = rk45_check_step_acceptance(errPos, errVel, tolerancePos, toleranceVel, y.total_count); 
         }
@@ -419,20 +420,20 @@ SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_init
         double scale_factor = 1.0;
         // Find the most restrictive scaling 
         for (int i = 0; i < y.total_count; i++) {
-            double pos_scale = min(safe_div(tolerancePos[i].x, errPos[i].x),
-                min(safe_div(tolerancePos[i].y, errPos[i].y),
+            double pos_scale = _min(safe_div(tolerancePos[i].x, errPos[i].x),
+                _min(safe_div(tolerancePos[i].y, errPos[i].y),
                     safe_div(tolerancePos[i].z, errPos[i].z)));
-            double vel_scale = min(safe_div(toleranceVel[i].x, errVel[i].x),
-                min(safe_div(toleranceVel[i].y, errVel[i].y),
+            double vel_scale = _min(safe_div(toleranceVel[i].x, errVel[i].x),
+                _min(safe_div(toleranceVel[i].y, errVel[i].y),
                     safe_div(toleranceVel[i].z, errVel[i].z)));
-            scale_factor = min(scale_factor, min(pos_scale, vel_scale));
+            scale_factor = _min(scale_factor, _min(pos_scale, vel_scale));
         }
         if (scale_factor < 3.0) scale_factor = 3.0; 
         h = h * 0.84 * pow(scale_factor, 0.25);
 
      }
 
-     free(k1.objs);
+    // free(k1.objs);
      free(k2.objs);
      free(k3.objs);
      free(k4.objs);
@@ -580,23 +581,23 @@ void rk45_err_correct_5th_order(SolarSystem *y5th_orderSolution, const SolarSyst
 
 void rk45_err_vec(vec3d_t *errPos, vec3d_t *errVel, SolarSystem y5th_orderSolution, SolarSystem y4th_orderSolution) {
     for (int i = 0; i < y5th_orderSolution.total_count; i++) {
-        errPos[i] = (vec3d_t){ abs(y5th_orderSolution.objs[i].position.x - y4th_orderSolution.objs[i].position.x), abs(y5th_orderSolution.objs[i].position.y - y4th_orderSolution.objs[i].position.y), abs(y5th_orderSolution.objs[i].position.z - y4th_orderSolution.objs[i].position.z) };
-        errVel[i] = (vec3d_t){ abs(y5th_orderSolution.objs[i].velocity.x - y4th_orderSolution.objs[i].velocity.x), abs(y5th_orderSolution.objs[i].velocity.y - y4th_orderSolution.objs[i].velocity.y), abs(y5th_orderSolution.objs[i].velocity.z - y4th_orderSolution.objs[i].velocity.z) };
+        errPos[i] = (vec3d_t){ fabs(y5th_orderSolution.objs[i].position.x - y4th_orderSolution.objs[i].position.x), fabs(y5th_orderSolution.objs[i].position.y - y4th_orderSolution.objs[i].position.y), fabs(y5th_orderSolution.objs[i].position.z - y4th_orderSolution.objs[i].position.z) };
+        errVel[i] = (vec3d_t){ fabs(y5th_orderSolution.objs[i].velocity.x - y4th_orderSolution.objs[i].velocity.x), fabs(y5th_orderSolution.objs[i].velocity.y - y4th_orderSolution.objs[i].velocity.y), fabs(y5th_orderSolution.objs[i].velocity.z - y4th_orderSolution.objs[i].velocity.z) };
     }
 
 }
 void rk45_tolerance_vec(vec3d_t* tolerancePos, vec3d_t* toleranceVel, vec3d_t tolAbsPos, vec3d_t tolRelPos, vec3d_t tolAbsVel, vec3d_t tolRelVel, SolarSystem y, SolarSystem y4th_orderSolution) {
     for (int i = 0; i < y.total_count; i++) {
         tolerancePos[i] = (vec3d_t){
-            (tolAbsPos.x + tolRelPos.x * max(abs(y.objs[i].position.x), abs(y4th_orderSolution.objs[i].position.x))),
-            (tolAbsPos.y + tolRelPos.y * max(abs(y.objs[i].position.y), abs(y4th_orderSolution.objs[i].position.y))),
-            (tolAbsPos.z + tolRelPos.z * max(abs(y.objs[i].position.z), abs(y4th_orderSolution.objs[i].position.z)))
+            (tolAbsPos.x + tolRelPos.x * max(fabs(y.objs[i].position.x), fabs(y4th_orderSolution.objs[i].position.x))),
+            (tolAbsPos.y + tolRelPos.y * max(fabs(y.objs[i].position.y), fabs(y4th_orderSolution.objs[i].position.y))),
+            (tolAbsPos.z + tolRelPos.z * max(fabs(y.objs[i].position.z), fabs(y4th_orderSolution.objs[i].position.z)))
         };
 
         toleranceVel[i] = (vec3d_t){
-            (tolAbsVel.x + tolRelVel.x * max(abs(y.objs[i].velocity.x), abs(y4th_orderSolution.objs[i].velocity.x))),
-            (tolAbsVel.y + tolRelVel.y * max(abs(y.objs[i].velocity.y), abs(y4th_orderSolution.objs[i].velocity.y))),
-            (tolAbsVel.z + tolRelVel.z * max(abs(y.objs[i].velocity.z), abs(y4th_orderSolution.objs[i].velocity.z)))
+            (tolAbsVel.x + tolRelVel.x * max(fabs(y.objs[i].velocity.x), fabs(y4th_orderSolution.objs[i].velocity.x))),
+            (tolAbsVel.y + tolRelVel.y * max(fabs(y.objs[i].velocity.y), fabs(y4th_orderSolution.objs[i].velocity.y))),
+            (tolAbsVel.z + tolRelVel.z * max(fabs(y.objs[i].velocity.z), fabs(y4th_orderSolution.objs[i].velocity.z)))
         };
 
     }

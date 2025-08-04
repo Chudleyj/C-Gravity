@@ -47,7 +47,7 @@ void vector_generic_error_handle(vector_result_t err, const char* msg, vector_er
 
 static vector_result_t GLvec3_expand(GLvec3_t *vec) {
     if (!vec) return VECTOR_ERROR_EMPTY;
-    float *tempData = NULL, *tempy = NULL, *tempz=NULL;
+    float* tempData = NULL;
     int newCapacity = vec->capacity * 2; 
     tempData = realloc(vec->data, sizeof(float) * newCapacity);
     if (!tempData){
@@ -92,7 +92,7 @@ vector_result_t GLvec3_push_point(GLvec3_t* vec, vec3_t point) {
     return ret;
 }
 
-vector_result_t GLvec3_push(GLvec3_t *vec, int data) {
+vector_result_t GLvec3_push(GLvec3_t *vec, float x, float y, float z) {
     vector_result_t ret = VECTOR_SUCESS;
     if (vec->size == vec->capacity) {
         ret = GLvec3_expand(vec);
@@ -100,9 +100,27 @@ vector_result_t GLvec3_push(GLvec3_t *vec, int data) {
             return ret;
         }
     }
-    vec->data[vec->size] = data;
+    vec->data[vec->size] = x;
+    vec->size++;
 
+    if (vec->size == vec->capacity) {
+        ret = GLvec3_expand(vec);
+        if (ret != VECTOR_SUCESS) {
+            return ret;
+        }
+    }
+    vec->data[vec->size] = y;
+    vec->size++;
+
+    if (vec->size == vec->capacity) {
+        ret = GLvec3_expand(vec);
+        if (ret != VECTOR_SUCESS) {
+            return ret;
+        }
+    }
+    vec->data[vec->size] = z;
     vec->size++; 
+
     return ret;
 }
 
@@ -126,11 +144,23 @@ vector_result_t GLvec3_pop_point(GLvec3_t *vec, vec3_t *point){
     return VECTOR_SUCESS;
 }
 
-vector_result_t GLvec3_pop(GLvec3_t* vec, int *data) {
+vector_result_t GLvec3_pop(GLvec3_t* vec, float *x, float *y, float*z) {
     if (vec->size == 0) {
         return VECTOR_ERROR_EMPTY;
     }
-    *data = vec->data[vec->size - 1];
+    *x = vec->data[vec->size - 1];
+    vec->size--;
+
+    if (vec->size == 0) {
+        return VECTOR_ERROR_EMPTY;
+    }
+    *y = vec->data[vec->size - 1];
+    vec->size--;
+
+    if (vec->size == 0) {
+        return VECTOR_ERROR_EMPTY;
+    }
+    *z = vec->data[vec->size - 1];
     vec->size--;
 
     return VECTOR_SUCESS;
@@ -159,7 +189,7 @@ vector_result_t GLvec3_get_point(GLvec3_t* vec, int index, vec3_t *point) {
     return VECTOR_SUCESS;
 }
 
-vector_result_t GLvec3_get(GLvec3_t* vec, int index, int *data) {
+vector_result_t GLvec3_get(GLvec3_t* vec, int index, float *x, float *y, float*z) {
     if (vec->size == 0) {
         return VECTOR_ERROR_EMPTY;
     }
@@ -168,7 +198,28 @@ vector_result_t GLvec3_get(GLvec3_t* vec, int index, int *data) {
         return VECTOR_ERROR_INVALID_INDEX;
     }
 
-    *data = vec->data[index];
+    *x = vec->data[index];
+
+    if (vec->size == 0) {
+        return VECTOR_ERROR_EMPTY;
+    }
+
+    if (index >= vec->size || index < 0) {
+        return VECTOR_ERROR_INVALID_INDEX;
+    }
+
+    *y = vec->data[index];
+
+    if (vec->size == 0) {
+        return VECTOR_ERROR_EMPTY;
+    }
+
+    if (index >= vec->size || index < 0) {
+        return VECTOR_ERROR_INVALID_INDEX;
+    }
+
+    *z = vec->data[index];
+
 
     return VECTOR_SUCESS;
 }
@@ -236,9 +287,12 @@ vector_result_t vec3d_subtract(const vec3d_t srcVec1, const vec3d_t srcVec2, vec
 }
 
 vector_result_t vec3_cross_product(const vec3_t srcVec1, const vec3_t srcVec2, vec3_t* tgtVec) {
+//todo: err handle
     tgtVec->x = srcVec1.y * srcVec2.z - srcVec1.z * srcVec2.y;
     tgtVec->y = srcVec1.z * srcVec2.x - srcVec1.x * srcVec2.z;
     tgtVec->z = srcVec1.x * srcVec2.y - srcVec1.y * srcVec2.x;
+
+    return VECTOR_SUCESS;
 }
 
 vec3_t vec3_sphericalToCartesian(float rho, float theta, float phi) {
@@ -336,9 +390,9 @@ void mat4_identity(mat4_t* result) {
 mat4_t mat4_dtranslate(const mat4_t mat, const vec3d_t vec) {
     mat4_t result = mat;
 
-    result.column[3].row[0] = (float)mat.column[3].row[0] + vec.x;
-    result.column[3].row[1] = (float)mat.column[3].row[1] + vec.y;
-    result.column[3].row[2] = (float)mat.column[3].row[2] + vec.z;
+    result.column[3].row[0] = (float)mat.column[3].row[0] + (float)vec.x;
+    result.column[3].row[1] = (float)mat.column[3].row[1] + (float)vec.y;
+    result.column[3].row[2] = (float)mat.column[3].row[2] + (float)vec.z;
     result.column[3].row[3] = 1.0f;
 
     return result;

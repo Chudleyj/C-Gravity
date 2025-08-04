@@ -102,15 +102,14 @@ void shader_setmat4(Shader shader, const char* name, const mat4_t* mat) {
     glUniformMatrix4fv(glGetUniformLocation(shader.ID, name), 1, GL_FALSE, &(mat->column[0].row[0]));
 }
 
-void  shader_setVec3(Shader shader, const char* name, float x, float y, float z){
+void shader_setVec3(Shader shader, const char* name, float x, float y, float z){
     glUniform3f(glGetUniformLocation(shader.ID, name), x, y, z);
 }
 
 void shader_checkCompileErrors(unsigned int shaderID, const char* type) {
     int success;
     char infoLog[1024];
-    if (type != "PROGRAM")
-    {
+    if (strcmp(type, "PROGRAM") != 0){
         glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
         if (!success)
         {
@@ -119,15 +118,14 @@ void shader_checkCompileErrors(unsigned int shaderID, const char* type) {
             exit(EXIT_FAILURE);
 
         }
-        else
+    }
+    else{
+        glGetProgramiv(shaderID, GL_LINK_STATUS, &success);
+        if (!success)
         {
-            glGetProgramiv(shaderID, GL_LINK_STATUS, &success);
-            if (!success)
-            {
-                glGetProgramInfoLog(shaderID, 1024, NULL, infoLog);
-                printf("ERROR::PROGRAM_LINKING_ERROR of type: %s\n %s", type, infoLog);
-                exit(EXIT_FAILURE);
-            }
+            glGetProgramInfoLog(shaderID, 1024, NULL, infoLog);
+            printf("ERROR::PROGRAM_LINKING_ERROR of type: %s\n %s", type, infoLog);
+            exit(EXIT_FAILURE);
         }
     }
 }

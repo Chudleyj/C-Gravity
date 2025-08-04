@@ -121,7 +121,7 @@ double solar_obj_check_collision(const SolarObj *obj1, const SolarObj *obj2) {
     double dz = obj2->position.z - obj1->position.z;
 
     double distance = sqrt(dx * dx + dy * dy + dz * dz);
-    if ((obj2->radius/obj2->scale) + (obj1->radius/obj1->scale) > distance) {
+    if ((double)(obj2->radius/obj2->scale) + (double)(obj1->radius/obj1->scale) > distance) {
         return -0.2f;
     }
     return 1.0f;

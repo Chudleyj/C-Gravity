@@ -14,7 +14,6 @@ Camera* global_camera = NULL;
 bool firstMouse = true;
 
 int main() {
-
     Camera camera = camera_init_vectors((vec3_t) { 0.0f, 50.0f, 500.0f },(vec3_t){ 0.0f, 1.0f, 1.0f }, YAW, PITCH);
     global_camera = &camera; 
 
@@ -47,7 +46,7 @@ int main() {
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
     double simTime = 0.0; 
-    double physStep = 86400.0 /3; //one day in sec = 86400
+    double physStep = 86400.0 /8; //one day in sec = 86400
 
     while (!glfwWindowShouldClose(window)) {
             float currentFrame = (float)glfwGetTime();
@@ -62,13 +61,13 @@ int main() {
 
             updateCamera(shader); 
 
-            mat4_perspective(&projection, degrees_to_radians(global_camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
+            mat4_perspective(&projection, (float)degrees_to_radians(global_camera->zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
             shader_setmat4(shader, "projection", &projection);
             shader_setVec3(shader, "viewPos", global_camera->position.x, global_camera->position.y, global_camera->position.z);
             shader_setVec3(shader, "lightPos", lightPos.x, lightPos.y, lightPos.z);
             //make the light move:
-            lightPos.x = 50.0f * cos(currentFrame);
-            lightPos.z = 50.0f * sin(currentFrame);
+            lightPos.x = 50.0f * cosf(currentFrame);
+            lightPos.z = 50.0f * sinf(currentFrame);
             lightPos.y = 20.0f;
 
           
@@ -154,7 +153,7 @@ void drawToScreen(SolarSystem* s, Shader shader) {
         }
 
         shader_setmat4(shader, "model", &model);
-        glDrawArrays(GL_TRIANGLES, 0, currentObj->vertex_count / 3);
+        glDrawArrays(GL_TRIANGLES, 0, (GLsizei)currentObj->vertex_count / 3);
 
     }
 
