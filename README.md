@@ -36,8 +36,8 @@ sudo zypper install gcc make libglfw3-devel Mesa-libGL-devel glu-devel
 ```
 
 ### Windows:
-On Windows it is more complicatied to build this, but possible (I originally built this on Windows):
-You will need to setup http://glfw.org/download.html . 
+On Windows it is more complicatied to build this, but possible (I originally built this on Windows): <br>
+You will need to setup http://glfw.org/download.html . <br>
 If you do not know what you are doing, I reccomend visiting https://learnopengl.com/Getting-started/Creating-a-window as the instructions here are better than I can provide. 
 
 ### Mac:
