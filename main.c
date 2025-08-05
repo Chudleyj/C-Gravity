@@ -20,8 +20,25 @@ int main() {
 
     if (!glfwInit()) return -1;
     atexit(glfwTerminate);
+    GLFWwindow* window = NULL; 
+    #ifdef _WIN32
+    window = glfwCreateWindow(2560, 1440, "C-Gravity", glfwGetPrimaryMonitor(), NULL);
+    #endif
 
-    GLFWwindow* window = glfwCreateWindow(2560, 1440, "C-Gravity", glfwGetPrimaryMonitor(), NULL);
+    #ifdef linux
+    int monitorCount;
+    GLFWmonitor* targetMonitor = NULL;
+    GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
+    printf("monitorCount: %d\n", monitorCount); 
+    for (int i = 0; i < monitorCount; i++) {
+        const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
+        printf("Monitor %d: %dx%d\n", i, mode->width, mode->height);
+    }
+    window = glfwCreateWindow(2560, 1440, "C-Gravity", NULL, NULL);
+    #endif
+
+
+
     if (!window) { glfwTerminate(); return -1; }
     glfwMakeContextCurrent(window);
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -37,8 +54,8 @@ int main() {
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
     
-    SolarSystem sol = solar_system_init();
-  
+    SolarSystem solCurrentState = solar_system_init();
+    SolarSystem solNewState ={0};
     Shader shader = shader_create("vertex.glsl", "fragment.glsl");
     vec3_t lightPos = (vec3_t){ 1.2f, 1.0f, 2.0f };
     mat4_t projection;
@@ -72,15 +89,24 @@ int main() {
 
           
             //Use RK45 Method to caluclate gravity over time
-            sol = rk45(sol, simTime, simTime + physStep, 0.01, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 });
+            solNewState = rk45(solCurrentState, simTime, simTime + physStep, 0.01, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 });
             
-            drawToScreen(&sol, shader);
-        
+            drawToScreen(&solNewState, shader);
+            free(solCurrentState.objs); 
+            solCurrentState = solar_system_copy(solNewState);
+            free(solNewState.objs); 
             glfwSwapBuffers(window);
             glfwPollEvents();
             simTime += physStep; 
     }
-    free(sol.objs); 
+    if(solCurrentState.objs){
+        free(solCurrentState.objs);
+    }
+    
+    if(solNewState.objs){
+      // free(solNewState.objs); 
+    } 
+    shader_deleteProg(shader);
     glfwDestroyWindow(window);
     return 0;
 }

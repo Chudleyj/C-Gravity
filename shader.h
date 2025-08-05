@@ -1,11 +1,12 @@
 #pragma once
 
-#include <glad/glad.h>
+#include "glad/include/glad/glad.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "vectors.h"
+#include <errno.h>
 typedef struct {
 	unsigned int ID;
 }Shader;

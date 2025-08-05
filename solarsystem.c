@@ -414,26 +414,28 @@ SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_init
         }
 
 
-        y = y5th_orderSolution;
+        for (int i = 0; i < y.total_count; i++) {
+            y.objs[i] = y5th_orderSolution.objs[i];
+        }
         t += h;
 
         double scale_factor = 1.0;
         // Find the most restrictive scaling 
         for (int i = 0; i < y.total_count; i++) {
-            double pos_scale = _min(safe_div(tolerancePos[i].x, errPos[i].x),
-                _min(safe_div(tolerancePos[i].y, errPos[i].y),
+            double pos_scale = min(safe_div(tolerancePos[i].x, errPos[i].x),
+                min(safe_div(tolerancePos[i].y, errPos[i].y),
                     safe_div(tolerancePos[i].z, errPos[i].z)));
-            double vel_scale = _min(safe_div(toleranceVel[i].x, errVel[i].x),
-                _min(safe_div(toleranceVel[i].y, errVel[i].y),
+            double vel_scale = min(safe_div(toleranceVel[i].x, errVel[i].x),
+                min(safe_div(toleranceVel[i].y, errVel[i].y),
                     safe_div(toleranceVel[i].z, errVel[i].z)));
-            scale_factor = _min(scale_factor, _min(pos_scale, vel_scale));
+            scale_factor = min(scale_factor, min(pos_scale, vel_scale));
         }
         if (scale_factor < 3.0) scale_factor = 3.0; 
         h = h * 0.84 * pow(scale_factor, 0.25);
 
      }
 
-    // free(k1.objs);
+     free(k1.objs);
      free(k2.objs);
      free(k3.objs);
      free(k4.objs);
@@ -441,7 +443,6 @@ SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_init
      free(k6.objs);
      free(temp.objs);
      free(y4th_orderSolution.objs);
-     y5th_orderSolution = solar_system_copy(s); //TODO: this is a bug, it get seg fault if i dont copy back to here before i free???
      free(y5th_orderSolution.objs);
 
      return y; 

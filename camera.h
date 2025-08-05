@@ -1,12 +1,12 @@
 #pragma once
-#include <glad/glad.h>
+#include "glad/include/glad/glad.h"
 #include "vectors.h"
 #include "utils.h"
 
 #define YAW -90.0f
-#define PITCH -15.0f
+#define PITCH -30.0f
 #define SPEED 1.5f
-#define SENSITIVITY 0.5f
+#define SENSITIVITY 0.1f
 #define ZOOM 100.0f
 
 typedef enum{

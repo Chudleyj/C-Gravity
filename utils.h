@@ -1,8 +1,8 @@
 #pragma once
 #include <math.h>
 
-#define _min(a,b) (((a)<(b))?(a):(b)) //TODO  windows issue, its defined for cpp, so when i define i get error, _ stops this
-#define _max(a,b) (((a)>(b))?(a):(b))
+#define min(a,b) (((a)<(b))?(a):(b)) //TODO  windows issue, its defined for cpp, so when i define i get error, _ stops this
+#define max(a,b) (((a)>(b))?(a):(b))
 #define PI 3.14159265359f
 #define SCR_WIDTH 800
 #define SCR_HEIGHT 600

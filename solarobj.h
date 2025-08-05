@@ -1,7 +1,7 @@
 #pragma once
 #include "vectors.h"
 #include "utils.h"
-#include <glad/glad.h>
+#include "glad/include/glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <stdbool.h>
 

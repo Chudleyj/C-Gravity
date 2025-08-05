@@ -1,14 +1,9 @@
 #include "shader.h"
 
 char* getShaderCode(const char* path) {
-    FILE* fp;
-    errno_t fileErr;
-
-    fileErr = fopen_s(&fp, path, "r");
-    if (fileErr != 0) {
-        char errBuf[256];
-        strerror_s(errBuf, sizeof(errBuf), fileErr);
-        printf("Failed opening shader file: %s : %s!\n", path, errBuf);
+    FILE* fp = fopen(path, "r");
+    if (fp == NULL) {
+        printf("Failed opening shader file: %s!\n", path);
         exit(EXIT_FAILURE);
     }
 
@@ -22,7 +17,7 @@ char* getShaderCode(const char* path) {
     }
 
     code[0] = '\0';
-    errno_t strcatErr;
+    int strcatErr;
     char line[256];
     while (fgets(line, sizeof(line), fp) != NULL) {
         size_t lineLen = strlen(line);
@@ -36,11 +31,8 @@ char* getShaderCode(const char* path) {
             }
             code = newCode;
         }
-        strcatErr = strcat_s(code, buffSize, line);
-        if (strcatErr != 0) {
-            printf("Strcat error: %d\n", strcatErr);
-            exit(EXIT_FAILURE);
-        }
+        strcat(code, line);
+
         len += lineLen;
     }
     fclose(fp);
