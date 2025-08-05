@@ -8,7 +8,58 @@ https://ntrs.nasa.gov/api/citations/19690021375/downloads/19690021375.pdf
 
 Coefficients used in the algorithm can also be found in the above, though one may find it easier to locate these references at https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta%E2%80%93Fehlberg_method
 
-Work in progress, gods speed if you try to build/run this on your PC in its current state. 
+# Build: 
+
+## Prerequisites
+
+Before building, you'll need to install the required development libraries:
+
+### Ubuntu/Debian:
+```bash
+sudo apt update
+sudo apt install build-essential libglfw3-dev libgl1-mesa-dev libglu1-mesa-dev
+```
+
+### Fedora/RHEL/CentOS:
+```bash
+sudo dnf install gcc make glfw-devel mesa-libGL-devel mesa-libGLU-devel
+```
+
+### Arch Linux:
+```bash
+sudo pacman -S gcc make glfw-x11 mesa glu
+```
+
+### openSUSE:
+```bash
+sudo zypper install gcc make libglfw3-devel Mesa-libGL-devel glu-devel
+```
+
+### Windows:
+On Windows it is more complicatied to build this, but possible (I originally built this on Windows):
+You will need to setup http://glfw.org/download.html . 
+If you do not know what you are doing, I reccomend visiting https://learnopengl.com/Getting-started/Creating-a-window as the instructions here are better than I can provide. 
+
+### Mac:
+Sorry, I do not currently have a Mac to build on. 
+
+## Compile/Run
+
+Once you have the dependencies installed, build the project with:
+
+```bash
+gcc -o solar_system *.c -lglfw -lGL -lGLU -lm -ldl
+./solar_system
+```
+
+## Troubleshooting
+
+**If you get "command not found" for gcc:**
+- Install build tools: `sudo apt install build-essential` (Ubuntu/Debian)
+
+**If you get library not found errors:**
+- You might need `libglfw3-dev` instead of `glfw-devel`
+
 
 <br>
 
