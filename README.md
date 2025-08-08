@@ -69,9 +69,13 @@ gcc -o solar_system *.c -lglfw -lGL -lGLU -lm -ldl
 First crack at textures (work in progress): 
 
 
+https://github.com/user-attachments/assets/e4f44f2a-e440-4b3b-b1de-897cd0185855
+
+
 https://github.com/user-attachments/assets/586d9750-3a50-405a-a3ba-22902765da72
 
 
+Older examples from before textures: 
 
 Please excuse the choppy lighting in the below examples for now, it is much smoother when I am running it versus how it comes out in the recordings, but I plan to redo lighting and add textures in the future which will *hopefully* make better videos.
 
