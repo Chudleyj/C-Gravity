@@ -66,15 +66,15 @@ SolarSystem solar_system_init() {
    };
 
 float rotationSpeeds[] = {
-    0.1f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Sun
-    1.0f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Mercury (1 rotation per Mercury day) 
-    -0.004f * PHYSICS_TIMESTEP / SEC_IN_DAY,   // Venus (243 Earth days per rotation)
-    1.0f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Earth (1 rotation per day)
-    1.03f * PHYSICS_TIMESTEP / SEC_IN_DAY,     // Mars (24.6 hour day)
-    2.4f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Jupiter (10 hour day)
-    2.2f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Saturn (10.7 hour day)
-    -1.4f * PHYSICS_TIMESTEP / SEC_IN_DAY,     // Uranus (17.2 hour day, retrograde)
-    1.5f * PHYSICS_TIMESTEP / SEC_IN_DAY       // Neptune (16.1 hour day)
+    0.00001f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Sun
+    0.001f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Mercury (1 rotation per Mercury day) 
+    -0.0000004f * PHYSICS_TIMESTEP / SEC_IN_DAY,   // Venus (243 Earth days per rotation)
+    0.0001f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Earth (1 rotation per day)
+    0.000103f * PHYSICS_TIMESTEP / SEC_IN_DAY,     // Mars (24.6 hour day)
+    0.00024f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Jupiter (10 hour day)
+    0.00022f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Saturn (10.7 hour day)
+    -0.00014f * PHYSICS_TIMESTEP / SEC_IN_DAY,     // Uranus (17.2 hour day, retrograde)
+    0.00015f * PHYSICS_TIMESTEP / SEC_IN_DAY       // Neptune (16.1 hour day)
 };
 
    float glColorsScale = 255.0f; //Hex rgb 0-255, gl 0-1, so scale
