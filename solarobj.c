@@ -5,6 +5,7 @@
 //iterating over long and lat of a circle, we get 4 values: (theta+1, phi), (theta+1, phi+1), (theta, phi), (theta, phi + 1)
 //these 4 point coordinates = a rect on the face of a sphere (aka 2 triangles) 
 //do this for every point, and boom we got a sphere
+// Special thank you to kavan010 https://github.com/kavan010/gravity_sim/tree/main for teaching me how the heck to draw a sphere in OpenGL (https://www.youtube.com/watch?v=_YbGWoUaZg0), this project was very stuck until I found that. 
 GLvec3_t solar_obj_draw_sphere(float radius) {
     vector_result_t vecRes;
 
@@ -98,7 +99,7 @@ void solar_obj_init_moon(SolarObj* moon, const SolarObj* parent, const MoonData*
 
    
     solar_obj_init(moon, moon_pos, moon_vel, moon_data->color,
-        moon_data->mass, moon_data->density, moon_data->scale, -1 , 0.0f);
+        moon_data->mass, moon_data->density, moon_data->scale, -1 , 0.1f);
 
     moon->parent_id = moon_data->parent_planet_id;
     moon->is_moon = true;
