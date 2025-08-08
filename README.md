@@ -8,6 +8,10 @@ https://ntrs.nasa.gov/api/citations/19690021375/downloads/19690021375.pdf
 
 Coefficients used in the algorithm can also be found in the above, though one may find it easier to locate these references at https://en.wikipedia.org/wiki/Runge%E2%80%93Kutta%E2%80%93Fehlberg_method
 
+
+Special thank you to user kavan010 https://github.com/kavan010/gravity_sim/tree/main for teaching me how the heck to draw a sphere in OpenGL (https://www.youtube.com/watch?v=_YbGWoUaZg0), this project was very stuck until I found that. 
+
+
 # Build: 
 
 ## Prerequisites
