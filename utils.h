@@ -11,8 +11,8 @@
 #define METER_TO_OPENGL 1e-9f  // 1 OpenGL unit = 1 billion meters = 1 million km
 #define AU_IN_METERS 1.496e11f // 1 AU in meters
 #define NUM_SOLAR_OBJS 9 //TODO: Really shouldnt be a hard define, this should be variable...
-
-
+#define SEC_IN_DAY 86400.0
+#define PHYSICS_TIMESTEP SEC_IN_DAY / 8 
 
 
 double degrees_to_radians(double deg);

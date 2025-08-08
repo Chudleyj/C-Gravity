@@ -1,4 +1,5 @@
 #pragma once
+#include "stb_image.h"
 #include "vectors.h"
 #include "utils.h"
 #include "glad/include/glad/glad.h"
@@ -55,6 +56,7 @@ typedef struct {
     float density;
     float radius;
     float scale;
+    float rotationSpeed; 
     vec3d_t accleration; 
     vec3d_t priorAccleration;
     vec3d_t position;
@@ -62,13 +64,16 @@ typedef struct {
     colorVec_t color; 
     size_t vertex_count;
     size_t moon_count; 
+    int id; 
     int parent_id; //-1 if not a moon, else a SolarObjNames enum value 
     bool is_moon;
+    unsigned int texture; 
 }SolarObj;
 
 GLvec3_t solar_obj_draw_sphere(float radius);
+unsigned int solar_obj_get_texture(int id);
 void solar_obj_init_moon(SolarObj* moon, const SolarObj* parent, const MoonData* moon_data);
-void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_t color, float mass, float density, float scale);
+void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_t color, float mass, float density, float scale, int id, float rotSpeed);
 double solar_obj_check_collision(const SolarObj *obj1, const SolarObj *obj2);
 vec3d_t solar_obj_log_scale_positions(const vec3d_t realPosition);
 static void solar_obj_init_VAO_VBO(GLuint* VAO, GLuint* VBO, const float* vertices, size_t vertexCount);

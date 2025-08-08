@@ -13,17 +13,24 @@ GLvec3_t solar_obj_draw_sphere(float radius) {
     
     int stacks = 10;
     int sectors = 50;
-
+ 
     for (float i = 0.0f; i <= stacks; i++) {
         float theta1 = (i / stacks) * PI;
         float theta2 = ((i + 1) / stacks) * PI;
         for (float j = 0.0f; j < sectors; j++) {
             float phi1 = j / sectors * 2 * PI;
             float phi2 = (j + 1) / sectors * 2 * PI;
+
             vec3_t v1 = vec3_sphericalToCartesian(radius, theta1, phi1);
             vec3_t v2 = vec3_sphericalToCartesian(radius, theta1, phi2);
             vec3_t v3 = vec3_sphericalToCartesian(radius, theta2, phi1);
             vec3_t v4 = vec3_sphericalToCartesian(radius, theta2, phi2);
+
+            //Texture coords
+            float U1 = phi1/(2*PI); 
+            float U2 = phi2/(2*PI); 
+            float V1 = theta1/PI; 
+            float V2 = theta2/PI;
 
             vec3_t n1 = v1; 
       
@@ -44,23 +51,32 @@ GLvec3_t solar_obj_draw_sphere(float radius) {
 
             // Triangle 1
             vecRes = GLvec3_push_point(&verts, v1); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
-            vecRes = GLvec3_push_point(&verts, n1); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
+            vecRes = GLvec3_push_point(&verts, n1); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL); //Normalized pos
+            vecRes = GLvec3_push(&verts, U1, V1); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);//Textures
 
             vecRes = GLvec3_push_point(&verts, v2); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
             vecRes = GLvec3_push_point(&verts, n2); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
+            vecRes = GLvec3_push(&verts, U2, V1); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL); 
 
             vecRes = GLvec3_push_point(&verts, v3); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
             vecRes = GLvec3_push_point(&verts, n3); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
+            vecRes = GLvec3_push(&verts, U1, V2); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
 
             // Triangle 2
             vecRes = GLvec3_push_point(&verts, v2); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
             vecRes = GLvec3_push_point(&verts, n2); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
+            vecRes = GLvec3_push(&verts, U2, V1); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
+
+
 
             vecRes = GLvec3_push_point(&verts, v4); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
             vecRes = GLvec3_push_point(&verts, n4); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
+            vecRes = GLvec3_push(&verts, U2, V2); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
+
 
             vecRes = GLvec3_push_point(&verts, v3); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
             vecRes = GLvec3_push_point(&verts, n3); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
+            vecRes = GLvec3_push(&verts, U1, V2); if (vecRes) vector_generic_error_handle(vecRes, __func__, CRITICAL);
         }
     }
     return verts;
@@ -82,14 +98,51 @@ void solar_obj_init_moon(SolarObj* moon, const SolarObj* parent, const MoonData*
 
    
     solar_obj_init(moon, moon_pos, moon_vel, moon_data->color,
-        moon_data->mass, moon_data->density, moon_data->scale);
+        moon_data->mass, moon_data->density, moon_data->scale, -1 , 0.0f);
 
     moon->parent_id = moon_data->parent_planet_id;
     moon->is_moon = true;
 }
 
+ unsigned int solar_obj_get_texture(int id){
+    unsigned int texture; 
+    glGenTextures(1, &(texture));  
+    glBindTexture(GL_TEXTURE_2D, texture);  
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// set texture wrapping to GL_REPEAT (default wrapping method)
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_t color, float mass, float density, float scale) {
+    // set texture filtering parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    char* path; 
+    switch(id){
+        case SUN: path = "images/8k_sun.jpg"; break;
+        case MERCURY: path = "images/8k_mercury.jpg"; break;
+        case VENUS: path = "images/8k_venus_surface.jpg"; break;
+        case EARTH: path = "images/8k_earth_daymap.jpg"; break;
+        case MARS: path = "images/8k_mars.jpg"; break;
+        case JUPITER: path = "images/8k_jupiter.jpg"; break;
+        case SATURN: path = "images/8k_saturn.jpg"; break;
+        case URANUS: path = "images/2k_uranus.jpg"; break;
+        case NEPTUNE: path = "images/2k_neptune.jpg"; break;
+        default: path = "images/8k_moon.jpg"; break;
+    }
+
+    int width, height, nrChannels;
+    unsigned char *data = stbi_load(path, &width, &height, &nrChannels, 0); 
+    if(data == NULL){
+        printf("image load fail\n");
+        exit(EXIT_FAILURE); 
+    }
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+    stbi_image_free(data);
+ printf("Generated texture ID %u for object %d\n", texture, id);
+    return texture; 
+}
+
+void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_t color, float mass, float density, float scale, int id, float rotSpeed) {
     obj->position = startPos;
     obj->velocity = startVel;
     obj->mass = mass;
@@ -98,7 +151,8 @@ void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_
     obj->color = color;
     obj->accleration = (vec3d_t){ 0.0f };
     obj->priorAccleration = (vec3d_t){ 0.0f };
-
+    obj-> id = id; 
+    obj->rotationSpeed = rotSpeed; 
     float volume = mass / density; 
     float radius_meters = powf((3.0f * volume) / (4.0f * PI), 1.0f / 3.0f);
 
@@ -107,6 +161,7 @@ void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_
     GLvec3_t verticies = solar_obj_draw_sphere(obj->radius);
     obj->vertex_count = verticies.size;
 
+    obj->texture = solar_obj_get_texture(id); 
     solar_obj_init_VAO_VBO(&(obj->VAO), &(obj->VBO), verticies.data, obj->vertex_count);
 
 
@@ -174,11 +229,14 @@ static void solar_obj_init_VAO_VBO(GLuint* VAO, GLuint* VBO, const float* vertic
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     glBufferData(GL_ARRAY_BUFFER, vertexCount * sizeof(float), vertices, GL_DYNAMIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
 
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
+
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+    glEnableVertexAttribArray(2);
 
     glBindVertexArray(0);
 }

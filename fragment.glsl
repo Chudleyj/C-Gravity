@@ -1,11 +1,16 @@
 #version 420 core
 out vec4 FragColor;
+
 in vec3 FragPos; 
 in vec3 Normal; 
+in vec2 TexCoord;
+
 uniform vec3 lightPos; 
 uniform vec3 viewPos; 
 uniform vec4 objColor; 
 uniform bool emitLight; 
+uniform sampler2D ourTexture; 
+
 void main()
 {
     vec4 baseColor = objColor;
@@ -27,7 +32,9 @@ void main()
         
         float surface = sin(FragPos.x * 10.0) * sin(FragPos.y * 10.0) * sin(FragPos.z * 10.0) * 0.1 + 1.0;
         
-        FragColor = (emissive + rimGlow) * surface;
+        
+        //FragColor = (emissive + rimGlow) * surface;
+         FragColor = texture(ourTexture, TexCoord); 
     } else {
         vec3 norm = normalize(Normal);
         
@@ -42,6 +49,8 @@ void main()
         float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
         vec4 specular = spec * vec4(1.0, 1.0, 1.0, 1.0);
         
-        FragColor = ambient + diffuse + specular;
+       // FragColor = ambient + diffuse + specular;
+        FragColor = texture(ourTexture, TexCoord); 
+
     }
 }

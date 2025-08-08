@@ -52,7 +52,7 @@ vector_result_t GLvec3_init(GLvec3_t* vec);
 vector_result_t GLvec3_free(GLvec3_t* vec);
 static vector_result_t GLvec3_expand(GLvec3_t* vec);
 vector_result_t GLvec3_push_point(GLvec3_t* vec, vec3_t point);
-vector_result_t GLvec3_push(GLvec3_t* vec, float x, float y, float z);
+vector_result_t GLvec3_push(GLvec3_t* vec, float x, float y);
 vector_result_t GLvec3_pop_point(GLvec3_t* vec, vec3_t* point);
 vector_result_t GLvec3_pop(GLvec3_t* vec, float* x, float* y, float* z);
 vector_result_t GLvec3_get_point(GLvec3_t* vec, int index, vec3_t* point);

@@ -65,6 +65,18 @@ SolarSystem solar_system_init() {
  
    };
 
+float rotationSpeeds[] = {
+    0.1f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Sun
+    1.0f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Mercury (1 rotation per Mercury day) 
+    -0.004f * PHYSICS_TIMESTEP / SEC_IN_DAY,   // Venus (243 Earth days per rotation)
+    1.0f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Earth (1 rotation per day)
+    1.03f * PHYSICS_TIMESTEP / SEC_IN_DAY,     // Mars (24.6 hour day)
+    2.4f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Jupiter (10 hour day)
+    2.2f * PHYSICS_TIMESTEP / SEC_IN_DAY,      // Saturn (10.7 hour day)
+    -1.4f * PHYSICS_TIMESTEP / SEC_IN_DAY,     // Uranus (17.2 hour day, retrograde)
+    1.5f * PHYSICS_TIMESTEP / SEC_IN_DAY       // Neptune (16.1 hour day)
+};
+
    float glColorsScale = 255.0f; //Hex rgb 0-255, gl 0-1, so scale
    colorVec_t colors[] = {
         (colorVec_t){255.0f / glColorsScale, 204.0f/glColorsScale, 51.0f/glColorsScale, 1.0f}, //Sun 
@@ -88,7 +100,7 @@ SolarSystem solar_system_init() {
    }
 
     for (int i = 0; i < NUM_SOLAR_OBJS; i++) {
-        solar_obj_init(&sol.objs[i], objPositions[i], objStartVels[i], colors[i], objMasses[i], objDensities[i], scale[i]);
+        solar_obj_init(&sol.objs[i], objPositions[i], objStartVels[i], colors[i], objMasses[i], objDensities[i], scale[i], i, rotationSpeeds[i]);
         sol.objs[i].parent_id = -1; 
         sol.objs[i].is_moon = false; 
     }

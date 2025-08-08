@@ -92,7 +92,7 @@ vector_result_t GLvec3_push_point(GLvec3_t* vec, vec3_t point) {
     return ret;
 }
 
-vector_result_t GLvec3_push(GLvec3_t *vec, float x, float y, float z) {
+vector_result_t GLvec3_push(GLvec3_t *vec, float x, float y) {
     vector_result_t ret = VECTOR_SUCESS;
     if (vec->size == vec->capacity) {
         ret = GLvec3_expand(vec);
@@ -111,15 +111,6 @@ vector_result_t GLvec3_push(GLvec3_t *vec, float x, float y, float z) {
     }
     vec->data[vec->size] = y;
     vec->size++;
-
-    if (vec->size == vec->capacity) {
-        ret = GLvec3_expand(vec);
-        if (ret != VECTOR_SUCESS) {
-            return ret;
-        }
-    }
-    vec->data[vec->size] = z;
-    vec->size++; 
 
     return ret;
 }
@@ -440,6 +431,7 @@ mat4_t mat4_rotate(const mat4_t mat, const float angle, const vec3_t vec) {
     temp.z = (1.0f - c) * axis.z;
 
     mat4_t rotate = { 0 };
+    mat4_identity(&rotate);
 
     rotate.column[0].row[0] = c + temp.x * axis.x; 
     rotate.column[0].row[1] = temp.x * axis.y + s * axis.z;
@@ -453,18 +445,7 @@ mat4_t mat4_rotate(const mat4_t mat, const float angle, const vec3_t vec) {
     rotate.column[2].row[1] = temp.z * axis.y - s * axis.x;
     rotate.column[2].row[2] = c + temp.z * axis.z; 
 
-    mat4_t result = { 0 };
-
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            for (int k = 0; k < 3; k++) {
-                result.column[i].row[j] += mat.column[k].row[j] * rotate.column[i].row[k];
-            }
-        }
-    }
-
-    result.column[3] = mat.column[3]; 
-    return result; 
+    return mat4_multilply(mat, rotate); 
 }
 
 

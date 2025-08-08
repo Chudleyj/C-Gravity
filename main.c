@@ -2,13 +2,14 @@
 #include "camera.h"
 #include "solarsystem.h"
 
+
 void processInput(GLFWwindow* window, Camera* cam, float dt);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xposIn, double yposIn);
 void updateCamera(Shader shader);
-void drawToScreen(SolarSystem *s, Shader shader);
+void drawToScreen(SolarSystem *s, Shader shader, double simTime);
 
 Camera* global_camera = NULL;
 bool firstMouse = true;
@@ -22,7 +23,7 @@ int main() {
     atexit(glfwTerminate);
     GLFWwindow* window = NULL; 
     #ifdef _WIN32
-    window = glfwCreateWindow(2560, 1440, "C-Gravity", glfwGetPrimaryMonitor(), NULL);
+    window = glfwCreateWindow(800, 600, "C-Gravity", glfwGetPrimaryMonitor(), NULL);
     #endif
 
     #ifdef linux
@@ -34,7 +35,7 @@ int main() {
         const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
         printf("Monitor %d: %dx%d\n", i, mode->width, mode->height);
     }
-    window = glfwCreateWindow(2560, 1440, "C-Gravity", NULL, NULL);
+    window = glfwCreateWindow(800, 600, "C-Gravity", NULL, NULL);
     #endif
 
 
@@ -53,7 +54,8 @@ int main() {
     }
     glEnable(GL_DEPTH_TEST);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    
+
+
     SolarSystem solCurrentState = solar_system_init();
     SolarSystem solNewState ={0};
     Shader shader = shader_create("vertex.glsl", "fragment.glsl");
@@ -63,8 +65,7 @@ int main() {
     float deltaTime = 0.0f;
     float lastFrame = 0.0f;
     double simTime = 0.0; 
-    double physStep = 86400.0 /8; //one day in sec = 86400
-
+ 
     while (!glfwWindowShouldClose(window)) {
             float currentFrame = (float)glfwGetTime();
             deltaTime = currentFrame - lastFrame;
@@ -89,15 +90,15 @@ int main() {
 
           
             //Use RK45 Method to caluclate gravity over time
-            solNewState = rk45(solCurrentState, simTime, simTime + physStep, 0.01, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 });
+            solNewState = rk45(solCurrentState, simTime, simTime + PHYSICS_TIMESTEP, 0.01, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-3, 1e-3, 1e-3 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 }, (vec3d_t) { 1e-9, 1e-9, 1e-9 });
             
-            drawToScreen(&solNewState, shader);
+            drawToScreen(&solNewState, shader, simTime);
             free(solCurrentState.objs); 
             solCurrentState = solar_system_copy(solNewState);
             free(solNewState.objs); 
             glfwSwapBuffers(window);
             glfwPollEvents();
-            simTime += physStep; 
+            simTime += PHYSICS_TIMESTEP; 
     }
     if(solCurrentState.objs){
         free(solCurrentState.objs);
@@ -111,7 +112,7 @@ int main() {
     return 0;
 }
 
-void drawToScreen(SolarSystem* s, Shader shader) {
+void drawToScreen(SolarSystem* s, Shader shader, double simTime) {
     GLuint colorVecLocation = glGetUniformLocation(shader.ID, "objColor");
     GLuint emitLightLocation = glGetUniformLocation(shader.ID, "emitLight");
     mat4_t model;
@@ -120,6 +121,7 @@ void drawToScreen(SolarSystem* s, Shader shader) {
 
     //Loop over the solar system, draw every object in the system at its updated positions
      for (int i = 0; i < s->total_count; i++) {
+        mat4_identity(&model);
         currentObj = &s->objs[i];
 
         //Loop over the solar system again, compare each object against the current obj of the outer loop, check for collison 
@@ -136,6 +138,26 @@ void drawToScreen(SolarSystem* s, Shader shader) {
             }
         }
 
+
+        //Add rotation (spin) BEFORE we translate to oribtal positions, this will have the object spin on its own center
+        float rotationAngle = simTime * currentObj->rotationSpeed; 
+        vec3_t rotationAxis;
+        switch (i) {  
+            case EARTH:
+                rotationAxis = (vec3_t){0.0f, cosf(23.5f * PI/180.0f), sinf(23.5f * PI/180.0f)};  // 23.5 deg tilt
+                break;
+            case MARS:
+                rotationAxis = (vec3_t){0.0f, cosf(25.2f * PI/180.0f), sinf(25.2f * PI/180.0f)};  // 25.2 deg tilt
+                break;
+            case URANUS:
+                rotationAxis = (vec3_t){0.0f, cosf(98.0f * PI/180.0f), sinf(98.0f * PI/180.0f)};  // 98 deg tilt (sideways!)
+                break;
+            default:
+                rotationAxis = (vec3_t){0.0f, 1.0f, 0.0f};  // No tilt for other planets
+                break;
+        }
+
+        model = mat4_rotate(model, rotationAngle, rotationAxis);
         //its the sun, emit light instead of reflect it
         if (i == 0) {
             glUniform1i(emitLightLocation, 1);
@@ -147,7 +169,7 @@ void drawToScreen(SolarSystem* s, Shader shader) {
         glUniform4f(colorVecLocation, currentObj->color.r, currentObj->color.g, currentObj->color.b, currentObj->color.a);
         glBindVertexArray(currentObj->VAO);
         
-        mat4_identity(&model);
+      
         if (currentObj->is_moon) {
             // Special Moon positioning relative to its parent planet
             SolarObj* parent = &s->objs[currentObj->parent_id];
@@ -179,6 +201,7 @@ void drawToScreen(SolarSystem* s, Shader shader) {
         }
 
         shader_setmat4(shader, "model", &model);
+        glBindTexture(GL_TEXTURE_2D, currentObj->texture); 
         glDrawArrays(GL_TRIANGLES, 0, (GLsizei)currentObj->vertex_count / 3);
 
     }
