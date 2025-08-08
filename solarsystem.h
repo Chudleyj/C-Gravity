@@ -10,7 +10,7 @@ typedef struct {
 SolarSystem solar_system_init();
 void solar_system_calc_gravity(SolarSystem* s);
 SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_initial, vec3d_t tol_abs_pos, vec3d_t tol_abs_vel, vec3d_t tol_rel_pos, vec3d_t tol_rel_vel);
-void rk45_updateSystem(SolarSystem* s, const SolarSystem temp, double h); \
+void rk45_updateSystem(SolarSystem* s, const SolarSystem temp, double h); 
 SolarSystem solar_system_copy(SolarSystem src);
 void rk45_k1(SolarSystem* k1, SolarSystem* y, double h);
 void rk45_k2(SolarSystem* k2, SolarSystem* temp, const SolarSystem k1, const SolarSystem y, double h);
