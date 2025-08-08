@@ -27,6 +27,7 @@ int main() {
     #endif
 
     #ifdef linux
+    /* TODO: linux wont find primary monitor, it prints 2 monitors in below loop, but using either forces to secondary monitor for some reason....
     int monitorCount;
     GLFWmonitor* targetMonitor = NULL;
     GLFWmonitor** monitors = glfwGetMonitors(&monitorCount);
@@ -35,6 +36,7 @@ int main() {
         const GLFWvidmode* mode = glfwGetVideoMode(monitors[i]);
         printf("Monitor %d: %dx%d\n", i, mode->width, mode->height);
     }
+    */
     window = glfwCreateWindow(800, 600, "C-Gravity", NULL, NULL);
     #endif
 
