@@ -119,6 +119,23 @@ float rotationSpeeds[] = {
 }
 
 
+void solar_system_log_tail_points(SolarSystem *s){
+
+    for(int i = 0; i < s->total_count; i++){
+        s->objs[i].tailPositions[s->objs[i].tailWriteIndex] = s->objs[i].position;
+        if(s->objs[i].tailWriteIndex >= TAIL_BUFFER_SIZE){
+            s->objs[i].tailWriteIndex = 0;
+        }
+        else{
+            s->objs[i].tailWriteIndex++; 
+        }
+
+        if(s->objs[i].tailValidCount < TAIL_BUFFER_SIZE){
+            s->objs[i].tailValidCount++; 
+        }
+    }
+}
+
 //Force = mass * accl
 //Force due to gravity = F(g)
 //F(g) = G * ( (m1 * m2)/ distance^2)

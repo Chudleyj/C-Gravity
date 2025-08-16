@@ -8,6 +8,7 @@ typedef struct {
 }SolarSystem;
 
 SolarSystem solar_system_init();
+void solar_system_log_tail_points(SolarSystem *s);
 void solar_system_calc_gravity(SolarSystem* s);
 SolarSystem rk45(SolarSystem s, double initTime, double finalTime, double h_initial, vec3d_t tol_abs_pos, vec3d_t tol_abs_vel, vec3d_t tol_rel_pos, vec3d_t tol_rel_vel);
 void rk45_updateSystem(SolarSystem* s, const SolarSystem temp, double h); 

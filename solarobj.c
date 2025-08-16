@@ -154,6 +154,9 @@ void solar_obj_init(SolarObj* obj, vec3d_t startPos, vec3d_t startVel, colorVec_
     obj->priorAccleration = (vec3d_t){ 0.0f };
     obj-> id = id; 
     obj->rotationSpeed = rotSpeed; 
+    obj->tailWriteIndex = 0; 
+    obj->tailValidCount = 0; 
+
     float volume = mass / density; 
     float radius_meters = powf((3.0f * volume) / (4.0f * PI), 1.0f / 3.0f);
 

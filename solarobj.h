@@ -6,6 +6,8 @@
 #include <GLFW/glfw3.h>
 #include <stdbool.h>
 
+#define TAIL_BUFFER_SIZE 200
+
 typedef enum {
     SUN = 0, 
     MERCURY = 1, 
@@ -68,6 +70,9 @@ typedef struct {
     int parent_id; //-1 if not a moon, else a SolarObjNames enum value 
     bool is_moon;
     unsigned int texture; 
+    int tailWriteIndex; 
+    int tailValidCount;
+    vec3d_t tailPositions[TAIL_BUFFER_SIZE]; 
 }SolarObj;
 
 GLvec3_t solar_obj_draw_sphere(float radius);
